@@ -1,0 +1,857 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Self-Drive Bookings</title>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0b5fff"><link rel="apple-touch-icon" href="/icon-192.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--mu:#666;--bd:#ddd;--ac:#0b5fff;--cd:#f6f6f8;--wn:#b45309;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181c;--fg:#eee;--mu:#9aa3ad;--bd:#33373d;--ac:#7aa7ff;--cd:#1f2228;--wn:#f5b04c}}
+:root[data-theme="dark"]{--bg:#16181c;--fg:#eee;--mu:#9aa3ad;--bd:#33373d;--ac:#7aa7ff;--cd:#1f2228;--wn:#f5b04c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 8px}h2{font-size:16px;margin:0 0 10px}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:14px;margin:12px 0}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--mu)}
+input,select,textarea{width:100%;box-sizing:border-box;padding:8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit}
+button{padding:7px 11px;border:0;border-radius:6px;background:var(--ac);color:#fff;font:inherit;cursor:pointer;margin:6px 6px 0 0}
+button.s{background:transparent;color:var(--ac);border:1px solid var(--ac)}
+.tabs button{background:transparent;color:var(--fg);border:1px solid var(--bd)}.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+table{width:100%;border-collapse:collapse}td{padding:6px 0;border-bottom:1px solid var(--bd);vertical-align:top}
+.q td:last-child,.iv td:last-child{text-align:right;white-space:nowrap;padding-left:10px}.t td{font-weight:600;border-bottom:0}
+.mu{color:var(--mu);font-size:13px}.wn{color:var(--wn);font-size:13px}.w{overflow-x:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}
+.sc{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:10px;cursor:pointer;font-size:13px;color:var(--mu)}
+.sc b{display:block;font-size:24px;color:var(--fg)}.sc.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+.b{padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600}
+.b-Quoted{background:#f59e0b33;color:#b45309}.b-Confirmed{background:#3b82f633;color:#2563eb}.b-Pickedup{background:#8b5cf633;color:#7c3aed}.b-Completed{background:#22c55e33;color:#15803d}.b-Cancelled{background:#9993;color:var(--mu)}
+details.mn summary{cursor:pointer;color:var(--ac);display:inline-block;margin-top:6px;font-size:13px}
+.cal{table-layout:auto}.cal td{min-width:26px;height:26px;border:1px solid var(--bd);padding:0;text-align:center;font-size:11px}
+.cal td.cn1{text-align:left;padding:0 6px;white-space:nowrap;position:sticky;left:0;background:var(--cd);min-width:120px}
+.cal .ch.fe{background:#f59e0b33}.ce{cursor:pointer}.ce:hover{background:#3b82f633}.cb{cursor:pointer}
+.cb.Quoted{background:#f59e0b88}.cb.Confirmed{background:#3b82f6cc}.cb.Pickedup{background:#8b5cf6cc}.cb.Completed{background:#22c55e88}
+.md{position:fixed;inset:0;background:#0008;overflow:auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));z-index:20}
+.mc{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:16px;max-width:640px;margin:10px auto}
+.ck{display:flex;gap:6px;align-items:center;color:var(--fg);font-size:14px;margin-top:8px}.ck input{width:auto}
+@media(max-width:640px){#tb,#tb tbody,#tb tr,#tb td{display:block;width:100%}#tb tr{border:1px solid var(--bd);border-radius:10px;padding:8px;margin-bottom:10px;background:var(--bg)}#tb td{border:0;padding:3px 0}button{padding:10px 14px}}
+.nm{border-collapse:collapse;width:100%}
+.nm td{padding:7px 8px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--bd)}
+.nm td:first-child{text-align:left;white-space:normal;padding-left:0}.nm td:last-child{padding-right:0}
+.nh tr:first-child td{font-size:12px;color:var(--mu);font-weight:600;white-space:normal;vertical-align:bottom;border-bottom:2px solid var(--bd)}
+.nm tr.tt td{font-weight:700;background:rgba(127,127,127,.12)}
+.sk{max-height:440px;overflow:auto}.sk tr:first-child td{position:sticky;top:0;background:var(--cd);z-index:1}
+#ank{grid-template-columns:repeat(4,1fr)}.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}#anm td:first-child,#and td:first-child{white-space:nowrap}.g2 .card{margin:6px 0;min-width:0;overflow-x:auto}@media(max-width:700px){.g2{grid-template-columns:1fr}}#ank .sc b{font-size:20px;white-space:nowrap}
+@media(max-width:700px){#ank{grid-template-columns:repeat(2,1fr)}}
+.rd{color:#dc2626;font-size:13px}.g3{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+body{margin:0}
+#shell{display:flex;min-height:100vh}
+#nav{width:228px;flex:none;position:sticky;top:0;height:100vh;box-sizing:border-box;padding:18px 12px;background:var(--cd);border-right:1px solid var(--bd);display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+#nav .br{font-weight:700;font-size:16px;padding:4px 10px 14px}
+#nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--fg);text-decoration:none;font-size:14px;cursor:pointer}
+#nav a svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;opacity:.7}
+#nav a:hover{background:rgba(127,127,127,.14)}#nav a.on{background:var(--ac);color:#fff}#nav a.on svg{opacity:1}
+#nav .sp{flex:1}#nav .me{font-size:12px;color:var(--mu);padding:8px 10px 4px;word-break:break-all}
+#mw{flex:1;min-width:0}
+#top{display:flex;align-items:center;gap:10px;padding:16px 20px 0;max-width:980px;margin:0 auto;box-sizing:border-box}
+#mb{display:none;margin:0;padding:6px 10px;background:transparent;color:var(--fg);border:1px solid var(--bd);font-size:18px;line-height:1}
+#ptitle{font-size:22px;font-weight:700;flex:1}#nb{margin:0}
+main{max-width:980px;margin:0 auto;padding:12px 20px 32px;box-sizing:border-box}
+#scrim{display:none}
+@media(max-width:800px){#nav{position:fixed;left:0;top:0;z-index:30;transform:translateX(-100%);transition:transform .2s;width:250px;box-shadow:0 0 30px #0006}body.nvo #nav{transform:none}body.nvo #scrim{display:block;position:fixed;inset:0;background:#0006;z-index:25}#mb{display:block}#top{padding:12px 14px 0}main{padding:10px 14px 28px}}
+.hello h2{font-size:20px;margin:0}.hello .mu{margin-bottom:12px}
+.wr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);flex-wrap:wrap}.wr:last-child{border-bottom:0}
+.sec{font-size:12px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 2px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.chip{padding:6px 12px;border:1px solid var(--bd);border-radius:20px;font-size:13px;cursor:pointer;background:var(--cd)}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.login{max-width:380px;margin:12vh auto 0;padding:0 16px}.login label{margin-top:10px}
+.card{border-radius:12px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;display:none;max-width:92vw;padding:10px 14px;border-radius:10px;color:#fff;font-size:14px;box-shadow:0 6px 24px #0005;gap:12px;align-items:center}
+#toast.show{display:flex}#toast.ok{background:#15803d}#toast.err{background:#b91c1c}#toast.warn{background:#b45309}#toast button{margin:0;padding:4px 10px;background:#ffffff33;color:#fff}
+.bad{border-color:#dc2626!important;box-shadow:0 0 0 2px #dc262633}
+body.busy{cursor:progress}body.busy button{pointer-events:none;opacity:.6}
+.prefs{padding:6px 10px}.prefs label{margin-top:6px}.prefs select{padding:5px}
+.mcard{padding:9px 0;border-bottom:1px solid var(--bd)}.mcard .r1{display:flex;justify-content:space-between;gap:10px}
+@media(max-width:700px){.dsk{display:none!important}}@media(min-width:701px){.mob{display:none!important}}
+.dp{font-size:13px}.dh{display:flex;gap:10px;align-items:center;margin-bottom:8px}.dh img{height:40px}.dm{margin:8px 0;line-height:1.6}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.pg img{width:100%;border-radius:8px}
+#tb td:last-child button{white-space:nowrap}#tb td:last-child{min-width:150px}
+@media print{body>*:not(#dv){display:none!important}#dv{position:static!important;background:#fff!important;padding:0!important;overflow:visible!important}#dv .mc{border:0!important;box-shadow:none;max-width:none;margin:0}#dv .noprint{display:none!important}}
+</style></head><body>
+<div id="lg" class="login" style="display:none"><div class="card"><div style="text-align:center;margin-bottom:4px"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="var(--ac)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M3 17v-4l2-6h14l2 6v4M7 17v2M17 17v2"/><circle cx="7.5" cy="13" r=".8"/><circle cx="16.5" cy="13" r=".8"/></svg></div><h2 style="font-size:20px;text-align:center">Self-Drive Manager</h2><div class="mu" style="text-align:center">Sign in to your account</div><label>Email</label><input id="em" type="email" autocomplete="username"><label>Password</label><input id="pw" type="password" autocomplete="current-password"><button id="li" style="width:100%;margin-top:14px">Sign in</button><button class="s" id="fp" style="width:100%">Forgot password</button><div class="wn" id="lm"></div></div></div>
+<div id="shell" style="display:none">
+<aside id="nav"><div class="br" id="nbr">Self-Drive</div><a data-go="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</a><a data-go="bookings"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Bookings</a><a data-go="new"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>New booking</a><a data-go="cal"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Calendar</a><a data-go="fleet"><svg viewBox="0 0 24 24"><path d="M5 17h14M3 17v-4l2-6h14l2 6v4M7 17v2M17 17v2"/><circle cx="7.5" cy="13" r=".8"/><circle cx="16.5" cy="13" r=".8"/></svg>Fleet</a><a data-go="an"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Analytics</a><a data-go="set"><svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>Settings</a><a data-go="acct"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account</a><div class="sp"></div><div class="prefs"><label>Theme</label><select id="thm"><option value="auto">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select><label>Text size</label><select id="tsz"><option value="1">Normal</option><option value="1.12">Large</option><option value="1.25">Extra large</option></select></div><div class="mu" style="padding:2px 10px 6px;font-size:11px">Shortcuts: N new, / search, ? help</div><div class="me" id="nme"></div><a id="so1"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</a></aside><div id="scrim"></div>
+<div id="mw"><header id="top"><button id="mb" aria-label="Menu">&#9776;</button><div id="ptitle">Home</div><button id="nb">New booking</button></header>
+<main>
+<div id="msg" class="wn"></div>
+<section id="v0">
+<div class="hello" style="display:flex;gap:12px;align-items:center"><img id="hlogo" alt="" style="height:40px;display:none"><div><h2 id="hgreet"></h2><div class="mu" id="hdate"></div></div></div>
+<div id="hsetup"></div>
+<div class="card"><h2 style="margin-bottom:6px">Quote a customer</h2><div class="g" style="align-items:end"><div><label>Customer phone</label><input id="hqp" inputmode="tel" placeholder="10-digit number"></div><div><button id="hqb" style="margin:0">Start quote</button></div></div><div id="hqr" class="mu" style="margin-top:8px"></div></div>
+<div class="cards" id="sc2"></div>
+<div class="card"><h2>Today</h2><div id="hwork"></div></div>
+<div id="al"></div>
+<div class="tiles" id="hmon"></div>
+</section>
+<section id="v1" style="display:none">
+<div class="chips" id="qfc"></div>
+<div class="card"><div class="g"><div><label>Search (name, phone, car, number)</label><input id="srch"></div>
+<div><label>Status</label><select id="flt"><option value="">All</option><option>Quoted</option><option>Confirmed</option><option>Picked up</option><option>Completed</option><option>Cancelled</option></select></div>
+<div><label>Trips from</label><input type="date" id="dfrom"></div><div><label>Trips until</label><input type="date" id="dto"></div></div>
+<div class="w"><table id="tb" style="margin-top:8px"></table></div></div>
+</section>
+
+<section id="v4" style="display:none"><div class="card"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="s" id="wprev">Previous week</button><button class="s" id="wtoday">Today</button><button class="s" id="wnext">Next week</button><span class="mu" id="cr"></span></div>
+<div class="w dsk" style="margin-top:10px"><table id="cal" class="cal"></table></div><div class="mob" id="cagenda" style="margin-top:10px"></div>
+<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:13px"><span><i style="display:inline-block;width:14px;height:14px;border:1px solid var(--bd);vertical-align:-2px;margin-right:4px"></i>Free (click to book)</span><span><i style="display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:4px;background:#f59e0b88"></i>Quoted, not confirmed</span><span><i style="display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:4px;background:#3b82f6cc"></i>Confirmed</span><span><i style="display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:4px;background:#8b5cf6cc"></i>Picked up (on the road)</span><span><i style="display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:4px;background:#22c55e88"></i>Completed</span><span><i style="display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:4px;background:#f59e0b33"></i>Shaded date = festive surge</span></div><div class="mu" style="margin-top:6px">Click a booked day to jump to that booking. Cancelled bookings are not shown. Only confirmed and picked-up bookings block a car in the availability checks.</div></div></section>
+<section id="v6" style="display:none">
+<div class="card"><div class="g"><div><label>Period</label><select id="anp"><option value="tm">This month</option><option value="lm">Last month</option><option value="3m">Last 3 months</option><option value="6m" selected>Last 6 months</option><option value="ty">This year</option><option value="all">All time</option></select></div><div><label>From</label><input type="date" id="anf"></div><div><label>To</label><input type="date" id="ant"></div></div></div>
+<div class="cards" id="ank"></div>
+<div class="card"><h2>Month on month</h2><div class="mu">All amounts in Rs.</div><div id="anc" style="overflow-x:auto;margin:6px 0"></div><div class="w dsk"><table id="anm" class="nm nh"></table></div><div class="mob" id="anmm"></div></div>
+<div class="card"><h2>Daily money details</h2><div class="mu">All amounts in Rs. Days with no activity are hidden. Newest first.</div><div class="w sk dsk" style="margin-top:6px"><table id="and" class="nm nh"></table></div><div class="mob" id="andm" style="max-height:440px;overflow:auto"></div><button class="s" id="ex1" style="margin-top:12px">Download daily CSV</button><button class="s" id="ex2">Download trips CSV</button></div>
+<div class="card"><h2>Revenue by vehicle</h2><div class="w dsk"><table id="anv" class="nm nh"></table></div><div class="mob" id="anvm"></div></div>
+<div class="g2"><div class="card"><h2>Revenue breakdown</h2><table id="anb" class="nm"></table></div><div class="card"><h2>By category</h2><table id="ang" class="nm nh"></table></div></div>
+<div class="g2"><div class="card"><h2>Booking pipeline</h2><table id="anl" class="nm"></table></div><div class="card"><h2>Top customers</h2><table id="anu" class="nm nh"></table></div></div>
+<details class="card"><summary style="cursor:pointer;font-weight:600">How these numbers are calculated</summary><div class="mu" style="margin-top:8px">
+<p><b>Revenue</b> is the invoice value of completed bookings (rental after surge and discounts, plus extra km, late fees, fuel and cleaning, minus any additional discount), counted on the return date. Fastag is a toll pass-through and is not counted as revenue. The security deposit is never revenue.</p>
+<p><b>Cash</b> follows the money: the advance, the balance and deposit collected at handover, and the final settlement at return (customer pays, or a refund goes out). Net cash in a period can differ from revenue because bookings are paid before and after the trip. Cash received includes security deposits, which are adjusted or refunded at return.</p>
+<p><b>Utilisation</b> is booked days (confirmed, picked up and completed bookings) divided by active vehicles times days in the period.</p>
+<p><b>Limits:</b> advances on cancelled bookings are not tracked (refunded or kept is not recorded). Bookings confirmed before this update have no recorded advance date, so their advance is dated on the day the booking was created.</p></div></details>
+</section>
+<section id="v5" style="display:none"><details class="card" id="vd"><summary id="fh" style="cursor:pointer;font-weight:600;font-size:16px">Add a vehicle</summary><div style="height:10px"></div><div class="g">
+<div><label>Fill from rate card (optional)</label><select id="ftpl"></select></div>
+<div><label>Registration number</label><input id="vreg" placeholder="e.g. KA01AB1234"></div>
+<div><label>Model name</label><input id="vn"></div>
+<div><label>Gearbox</label><select id="vg"><option>Manual</option><option>AT</option></select></div>
+<div><label>Model year</label><input type="number" id="vy"></div>
+<div><label>Category</label><select id="vc"><option value="H">Hatchback</option><option value="C">Compact SUV</option><option value="S">SUV</option></select></div>
+<div><label>Price per day, 200 km/day (Rs)</label><input type="number" id="vr2"></div>
+<div><label>Price per day, 400 km/day (Rs)</label><input type="number" id="vr4"></div>
+<div><label>Extra km rate (Rs/km)</label><input type="number" id="vxk"></div>
+<div><label>Insurance expiry</label><input type="date" id="vins"></div>
+<div><label>Pollution certificate (PUC) expiry</label><input type="date" id="vpuc"></div>
+<div><label>Next service due</label><input type="date" id="vsvc"></div>
+<div><label>Other document (name)</label><input id="voth" placeholder="e.g. Permit, Fitness"></div>
+<div><label>Other document expiry</label><input type="date" id="vothd"></div></div>
+<button id="vsave">Add vehicle</button><button class="s" id="vcancel" style="display:none">Cancel edit</button><div class="wn" id="vmsg"></div></details><div class="card"><h2>Vehicles</h2><div class="w"><table id="ft2"></table></div><div class="mu" style="margin-top:6px">Retiring a vehicle hides it from new bookings and the calendar but keeps its booking history.</div></div>
+</section>
+<section id="v7" style="display:none">
+<div class="card"><h2>Your account</h2><div class="mu">Signed in as</div><div id="acem" style="font-weight:600"></div><div class="mu" style="margin-top:8px">Everything in this account is private to this login. Nobody else who uses this platform can see your bookings, vehicles, customers or settings.</div></div>
+<div class="card"><h2>Change password</h2><div class="g"><div><label>New password (8+ characters)</label><input type="password" id="np1" autocomplete="new-password"></div><div><label>Repeat new password</label><input type="password" id="np2" autocomplete="new-password"></div></div><button id="npb">Update password</button><div class="mu" id="npm"></div></div>
+<div class="card" id="teamc"><h2>Team</h2><div class="mu">People you add here sign in with their own login but work inside your account. Staff can create quotes and bookings, hand over and return cars. They cannot delete bookings or open Analytics, Settings or fleet editing. Create their login in Supabase first, then add their email here.</div><div class="w"><table id="teamt" style="margin-top:8px"></table></div><div class="g" style="margin-top:8px;align-items:end"><div><label>Staff email</label><input id="tm1" type="email"></div><div><button id="tm2" style="margin:0">Add team member</button></div></div><div class="mu" id="tmm"></div></div>
+<div class="card"><h2>Your data</h2><div class="mu">Download a full backup, or load a setup file with your fleet, pricing and settings.</div><button class="s" id="exj">Download my data (JSON)</button>
+<label style="margin-top:12px">Load setup file (JSON)</label><input type="file" id="imj" accept=".json,application/json"><div class="mu" id="imm"></div></div>
+<div class="card"><button class="s" id="so2" style="margin:0">Sign out</button></div>
+</section>
+<section id="v2" style="display:none">
+<div class="card"><h2>Trip</h2><div class="g">
+<div><label>Car</label><select id="car"></select></div>
+<div><label>Pickup date</label><input type="date" id="from"></div>
+<div><label>Drop date (inclusive)</label><input type="date" id="to"></div>
+<div><label>Pickup time</label><input type="time" id="pt" value="09:00"></div><div><label>Drop time</label><input type="time" id="dtm" value="23:00"></div>
+<div><label>Km plan (1-6 days only)</label><select id="plan"><option value="200">200 km/day</option><option value="400">400 km/day</option></select></div>
+</div></div>
+<div class="card"><h2>Quote</h2><div id="qo" class="mu">Pick a car and dates.</div>
+<div class="g" style="margin-top:10px"><div><label>Negotiated final price (optional, Rs)</label><input type="number" id="ov" min="0"></div><div><label>Negotiated total km (optional)</label><input type="number" id="okm" min="0"></div></div>
+<details class="mn" id="cpd" style="margin-top:10px"><summary>Custom pricing and competitor price (optional)</summary>
+<div class="g" style="margin-top:8px"><div><label>Custom rate per day (Rs). Replaces the standard pricing</label><input type="number" id="cpr" min="0"></div>
+<div><label>Competitor price per day (Rs, e.g. Revv for this car and dates). Used by AI pricing</label><input type="number" id="cmp" min="0"></div></div>
+<div class="mu" style="margin-top:8px">Extra charge or discount lines shown to the customer (minus sign for a discount)</div>
+<div class="g3" style="margin-top:6px"><div><input id="cl1" placeholder="Label, e.g. Delivery charge"></div><div><input type="number" id="ca1" placeholder="Amount"></div>
+<div><input id="cl2" placeholder="Label"></div><div><input type="number" id="ca2" placeholder="Amount"></div>
+<div><input id="cl3" placeholder="Label"></div><div><input type="number" id="ca3" placeholder="Amount"></div></div></details>
+<div style="margin-top:10px"><button class="s" id="aib1" style="margin-top:0">AI price suggestion</button><div id="aio" class="mu" style="margin-top:6px"></div></div>
+</div>
+<div class="card"><h2>Customer</h2><div class="mu" style="margin-bottom:8px">Needed to confirm a booking. For a quick quote, a phone number is enough to send it on WhatsApp.</div><div class="g"><div><label>Customer name</label><input id="cn"></div><div><label>Phone</label><input id="cp" inputmode="tel"><div class="mu" id="rcu"></div></div>
+<div><label>Aadhaar</label><input id="ca"></div><div><label>Driving licence</label><input id="cl"></div>
+<div style="grid-column:1/-1"><label>Notes (optional)</label><input id="nt"></div></div></div>
+<div class="card"><h2>Finish</h2><div id="pn" style="margin-top:10px"><label class="ck"><input type="checkbox" id="now"> Customer is taking the car now</label>
+<div class="g" id="nowf" style="display:none;margin-top:8px"><div><label>Odometer out (km)</label><input type="number" id="o0" min="0"></div><div><label>Fuel bars out (of 12)</label><input type="number" id="f0" min="0" max="12" value="12"></div>
+<div style="grid-column:1/-1"><label>Existing damage or marks at pickup (optional)</label><textarea id="dm0" rows="2"></textarea></div>
+<div style="grid-column:1/-1"><div class="mu" id="nowc"></div><label class="ck"><input type="checkbox" id="nowpay"> Payment collected</label></div></div></div>
+<button id="cfm">Confirm booking (advance received)</button><button class="s" id="sv">Save as quote</button><button class="s" id="svp">Save quote and download PDF</button><button class="s" id="svw">Save quote and send on WhatsApp</button><button class="s" id="sc" style="display:none">Cancel edit</button></div>
+</section>
+<section id="v3" style="display:none"><div class="card"><h2>Quotation and invoice details</h2>
+<div class="g"><div><label>Company name</label><input id="sBiz"></div><div><label>Phone</label><input id="sPh"></div><div><label>Email</label><input id="sEm"></div><div><label>GSTIN (optional, printed only)</label><input id="sGst"></div></div>
+<div class="g" style="margin-top:10px"><div><label>UPI ID (adds a pay QR code to PDFs)</label><input id="sUpi"></div><div><label>Brand colour</label><input type="color" id="sCol" value="#0b5fff"></div><div><label>Logo (small image)</label><input type="file" id="sLogo" accept="image/*"><img id="lgp" alt="" style="max-height:40px;margin-top:6px;display:none"><button class="s" id="lgx" style="display:none">Remove logo</button></div></div>
+<label style="margin-top:10px">Address</label><textarea id="sAddr" rows="2"></textarea>
+<label style="margin-top:10px">Payment details (UPI or bank, printed on quotes and invoices)</label><textarea id="sPay" rows="3"></textarea>
+<label style="margin-top:10px">Quotation terms (one per line)</label><textarea id="sQt" rows="4"></textarea>
+<label style="margin-top:10px">Invoice terms (one per line)</label><textarea id="sIt" rows="3"></textarea>
+<label style="margin-top:10px">Footer note (optional)</label><input id="sFt">
+<button id="ss">Save settings</button><div class="mu" id="sm" style="margin-top:6px"></div>
+<div class="mu" style="margin-top:6px">These fields change the text printed on the PDFs only. Prices, advance, deposit, fuel and late-fee calculations are not affected by editing the terms text.</div></div><div class="card"><h2>Pricing and policies</h2><div class="mu">Used for quotes, handover and final settlement. Amounts in Rs.</div>
+<div class="g" style="margin-top:8px"><div><label>City (helps AI pricing)</label><input id="pCity"></div>
+<div><label>Advance to confirm</label><input type="number" id="pAdv" min="0"></div>
+<div><label>Security deposit</label><input type="number" id="pDep" min="0"></div>
+<div><label>Fuel charge per bar short</label><input type="number" id="pFuel" min="0"></div>
+<div><label>Cleaning charge (if returned dirty)</label><input type="number" id="pCln" min="0"></div>
+<div><label>Late return grace (hours)</label><input type="number" id="pGr" min="0" step="0.5"></div>
+<div><label>Late return counts as a full day after (hours)</label><input type="number" id="pFd" min="1" step="0.5"></div></div>
+<div class="w"><table id="ptb" class="nm nh" style="margin-top:10px"></table></div>
+<button id="psv">Save pricing</button><div class="mu" id="pmsg"></div></div>
+<div class="card"><h2>Festive surge dates</h2><label>One range per line: start,end. Saved for this account.</label>
+<textarea id="fest" rows="5">2026-10-17,2026-10-21
+2026-11-07,2026-11-10
+2026-12-25,2026-12-27
+2027-01-23,2027-01-26</textarea></div></section>
+</main></div></div>
+<div class="md" id="hp" style="display:none"><div class="mc"><h2>Hand over car</h2><div class="mu" id="hh"></div><div class="g" style="margin-top:8px">
+<div><label>Odometer out (km)</label><input type="number" id="ho" min="0"></div>
+<div><label>Fuel bars out (of 12)</label><input type="number" id="hf" min="0" max="12" value="12"></div>
+<div><label>Aadhaar</label><input id="ha"></div><div><label>Driving licence</label><input id="hl"></div>
+<div style="grid-column:1/-1"><label>Existing damage or marks at pickup (optional)</label><textarea id="hn" rows="2" placeholder="e.g. scratch on rear bumper, small dent on left door"></textarea></div>
+<div style="grid-column:1/-1"><label>Photos of the car at pickup (optional)</label><input type="file" id="hph" accept="image/*" multiple></div></div>
+<div id="hcl" class="mu" style="margin-top:8px"></div><label class="ck"><input type="checkbox" id="hpay"> Payment collected</label>
+<div class="wn" id="hm"></div><button id="hgo">Hand over car</button><button class="s" id="hc">Cancel</button></div></div>
+<div class="md" id="rp" style="display:none"><div class="mc"><h2>Return car and invoice</h2><div class="mu" id="rh"></div><div class="mu" id="os" style="margin-top:4px"></div>
+<div class="g" style="margin-top:8px">
+<div><label>Odometer at return (km)</label><input type="number" id="o1" min="0"></div>
+<div><label>Fuel bars at return (of 12)</label><input type="number" id="f1" min="0" max="12"></div>
+<div><label>Actual return (date and time)</label><input type="datetime-local" id="ar"></div>
+<div><label>Fastag actual (Rs)</label><input type="number" id="ft" min="0" value="0"></div>
+<div><label>Returned dirty (cleaning charge)</label><select id="dr"><option value="0">No</option><option value="1">Yes</option></select></div>
+<div><label>Additional discount (Rs)</label><input type="number" id="dsc" min="0" value="0"></div>
+<div><label>Discount reason (optional)</label><input id="dsr"></div>
+<div style="grid-column:1/-1"><label>Return notes (optional)</label><input id="rn"></div>
+<div style="grid-column:1/-1"><label>New damage found at return (optional)</label><textarea id="dm1" rows="2"></textarea></div>
+<div style="grid-column:1/-1"><label>Photos of any damage at return (optional)</label><input type="file" id="rph" accept="image/*" multiple></div>
+<div><label>Damage charge (Rs, optional)</label><input type="number" id="dmc" min="0" value="0"></div></div>
+<div class="g" id="lg1" style="margin-top:8px;display:none"><div><label>Km driven (no pickup reading saved)</label><input type="number" id="km" min="0" value="0"></div><div><label>Fuel bars short (of 12)</label><input type="number" id="fb" min="0" max="12" value="0"></div></div>
+<div id="io" style="margin-top:10px"></div>
+<label class="ck"><input type="checkbox" id="pd" checked><span id="pdl">Balance payment received</span></label>
+<label class="ck" id="dpw"><input type="checkbox" id="dp" checked> Security deposit refunded</label>
+<div class="wn" id="rmsg"></div>
+<button id="fin">Close booking and download invoice</button><button class="s" id="fin2">Close and send on WhatsApp</button><button class="s" id="rc">Cancel</button></div></div>
+
+<div class="md" id="cd" style="display:none;z-index:40"><div class="mc" style="max-width:420px"><h2 id="cdt"></h2><div id="cdb" class="mu"></div><div style="margin-top:14px"><button id="cdy">Confirm</button><button class="s" id="cdn">Cancel</button></div></div></div>
+<div class="md" id="dv" style="display:none"><div class="mc" style="max-width:720px"><div class="noprint"><h2 id="dvt"></h2><div class="mu" id="dvs"></div></div><div id="dvb" style="margin-top:8px"></div><div class="noprint" style="margin-top:12px"><button id="dvd">Download PDF</button><button class="s" id="dvp">Print</button><button class="s" id="dvw">Send on WhatsApp</button><button class="s" id="dvr">Refresh from current details</button><button class="s" id="dvc">Close</button></div></div></div>
+<div class="md" id="hv" style="display:none"><div class="mc" style="max-width:520px"><h2>History</h2><div class="mu" id="hvh"></div><div id="hvb" style="margin-top:8px"></div><button class="s" id="hvc" style="margin-top:10px">Close</button></div></div>
+<div class="md" id="pv" style="display:none"><div class="mc" style="max-width:720px"><h2>Photos</h2><div class="mu" id="pvh"></div><div id="pvb" style="margin-top:8px"></div><button class="s" id="pvc" style="margin-top:10px">Close</button></div></div>
+<div id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const inr=n=>"Rs "+Math.round(n).toLocaleString("en-IN");
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const D=s=>new Date(s+"T00:00:00Z"),iso=d=>d.toISOString().slice(0,10),pad=n=>String(n).padStart(3,"0");
+const span=(f,t)=>{const a=[];for(let d=D(f);iso(d)<=t;d=new Date(+d+864e5))a.push(iso(d));return a};
+const BIZ="Your Business Name";
+const PR0={"city": "", "adv": 0, "dep": 0, "fuel": 0, "cln": 0, "gr": 1, "fd": 6, "H": {"hr": 0, "p7": 0, "p30": 0, "fl": 0}, "C": {"hr": 0, "p7": 0, "p30": 0, "fl": 0}, "S": {"hr": 0, "p7": 0, "p30": 0, "fl": 0}};let PR=JSON.parse(JSON.stringify(PR0)),PRset=false;
+let K={};function mkK(){K={H:{n:"Hatchback",...PR.H},C:{n:"Compact SUV",...PR.C},S:{n:"SUV",...PR.S}}}mkK();
+const RC=[];
+let C=[];
+const vl=c=>`${c[0]} ${c[1]} ${c[2]}${c[7]?" | "+c[7]:""}`;
+const fromV=o=>[o.n,o.g,o.y,o.r2,o.r4,o.c,o.xk,o.reg||"",!!o.off,o.dc||{}],toV=c=>({n:c[0],g:c[1],y:c[2],r2:c[3],r4:c[4],c:c[5],xk:c[6],reg:c[7]||"",off:!!c[8],dc:c[9]||{}});
+const ACT=["Confirmed","Picked up"];
+let B=[],sb=null,UID=null,EML="",aiS=null,aiA=null,cur=null,editId=null,qf="",cs=null;
+$("car").innerHTML=C.map((c,i)=>`<option value="${i}">${c[0]} ${c[1]} ${c[2]} (${K[c[5]].n})</option>`).join("");
+let toastT=null;
+function msg(t,k){
+  const el=$("toast");if($("lm"))$("lm").textContent=t||"";
+  if(!t){el.className="";el.innerHTML="";return}
+  if(!k)k=/could not|failed|not available|cannot|can't|error/i.test(t)?"err":/saved|confirmed|created|updated|added|handed|settled|deleted|cancelled|loaded|sent|restored|downloaded|duplicated/i.test(t)&&!/enter |pick |collect |already/i.test(t)?"ok":"warn";
+  el.className="show "+k;el.innerHTML=`<span>${esc(t)}</span>`+(msg.act?`<button data-t="act">${esc(msg.act.l)}</button>`:"");
+  clearTimeout(toastT);toastT=setTimeout(()=>{el.className="";msg.act=null},k=="err"?8000:msg.act?9000:4500);
+}
+function toast(t,k,act){msg.act=act||null;msg(t,k)}
+const fest=()=>$("fest").value.split("\n").map(l=>l.split(",").map(x=>x.trim())).filter(p=>p.length==2&&p[0]&&p[1]);
+const isF=d=>fest().some(([a,b])=>d>=a&&d<=b),wkend=d=>[0,6].includes(D(d).getUTCDay());
+
+function calc(p){
+  const{i,f,t}=p;if(!f||!t||t<f||!C[i])return null;
+  const c=C[i],k=K[c[5]],days=span(f,t),d=days.length,cpr=+p.cpr>0?+p.cpr:0,plan=(d>6&&!cpr)?200:+p.plan,rate=plan==400?c[4]:c[3];
+  const act=B.filter(b=>b.id!=editId&&ACT.includes(b.status)&&b.f<=t&&b.t>=f);
+  const dem=new Set(act.map(b=>b.i)).size/Math.max(1,C.filter(x=>!x[8]).length),clash=act.some(b=>b.i==i),L=[],N=[];let total,km;
+  if(cpr){
+    km=plan*d;total=cpr*d;L.push([`${c[0]} ${c[1]}: ${d} day(s) x ${inr(cpr)} (${plan} km/day)`,total]);
+    N.push("Custom rate: surge, discounts, floor and packages are not applied.");if(cpr<k.fl)N.push(`Custom rate is below your usual floor of ${inr(k.fl)}/day.`);
+  }else if(d<=6){
+    const nf=days.filter(isF).length;km=plan*d;total=rate*d;L.push([`${c[0]} ${c[1]}: ${d} day(s) x ${inr(rate)} (${plan} km/day)`,total]);
+    if(p.ai!=null&&p.ai!==""&&isFinite(+p.ai)){const q=Math.max(-30,Math.min(30,Math.round(+p.ai))),a=Math.round(total*q/100);L.push([`AI pricing adjustment ${q>0?"+":""}${q}%`,a]);total+=a;N.push(`AI pricing applied (${q>0?"+":""}${q}%) in place of the rule-based surge and discounts.`)}
+    else if(nf){const q=25+Math.min(5,Math.round(dem*20)),a=Math.round(rate*nf*q/100);L.push([`Festive surge ${q}% on ${nf} day(s)`,a]);total+=a;N.push(`Surge picked from the 25-30% range using demand (${Math.round(dem*100)}% of fleet booked).`)}
+    else if(d>=5){const q=Math.round(30-10*Math.min(1,dem*3)),a=-Math.round(total*q/100);L.push([`Long-booking discount ${q}%`,a]);total+=a;N.push("Discount picked from the 20-30% range: deeper when fewer cars are booked.")}
+    else if(!days.some(wkend)){const q=dem<.25?15:dem<.5?10:0;if(q){const a=-Math.round(total*q/100);L.push([`Weekday demand discount ${q}%`,a]);total+=a;N.push("Weekday discount suggested (10-15% range) because few cars are booked.")}}
+    if(total<k.fl*d){L.push([`Raised to floor (${inr(k.fl)}/day)`,k.fl*d-total]);total=k.fl*d}
+  }else if(d<30){total=Math.round((k.p7+(d-7)*(k.p30-k.p7)/23)/10)*10;km=Math.round(1000+(d-7)*2000/23);L.push([d==7?"7-day package":`${d}-day package (between 7 and 30 day packages)`,total])}
+  else{total=d==30?k.p30:Math.round(k.p30/30*d);km=100*d;L.push([d==30?"30-day package":`${d} days at 30-day package per-day rate (assumption)`,total])}
+  (p.cx||[]).forEach(x=>{if(x&&x.l&&+x.a){L.push([x.l,+x.a]);total+=+x.a}});
+  total=Math.round(total);const kmWas=km,ok=+p.okm;if(ok>0)km=Math.round(ok);const ov=+p.ov;if(ov>0){L.push([`Negotiated (was ${inr(total)})`,ov-total]);total=ov}
+  return{i,f,t,d,plan,L,N,total,km,kmWas,per:total/d,clash};
+}
+function invCalc(b,r){
+  const c=C[b.i],hr=K[c[5]].hr,rows=b.L.map(x=>[...x]);rows.push(["Total rental",b.total]);let sum=b.total;
+  const ex=Math.max(0,r.km-b.km);
+  if(ex){const a=ex*c[6];rows.push([`Extra km: ${ex.toLocaleString("en-IN")} x ${inr(c[6])}`,a]);sum+=a}
+  if(r.late>PR.gr){const a=r.late>PR.fd?b.per:Math.ceil(r.late)*hr;rows.push([r.late>PR.fd?`Late ${r.late} hrs: counted as one full day`:`Late ${r.late} hrs x ${inr(hr)}`,a]);sum+=a}
+  if(r.fb){rows.push([`Fuel: ${r.fb} bar(s) x ${inr(PR.fuel)}`,r.fb*PR.fuel]);sum+=r.fb*PR.fuel}
+  if(r.ft){rows.push(["Fastag (actual)",r.ft]);sum+=r.ft}
+  if(r.dirty){rows.push(["Cleaning",PR.cln]);sum+=PR.cln}
+  if(r.dmc){rows.push(["Damage charges",r.dmc]);sum+=r.dmc}
+  const dc=Math.min(Math.max(0,r.disc||0),sum);if(dc){rows.push([`Additional discount${r.dreason?" ("+r.dreason+")":""}`,-dc]);sum-=dc}
+  if(b.hc){const ad=b.adv||PR.adv,st=sum-ad-b.hc.bal-b.hc.dep;rows.push(["Total invoice value",sum],["Less advance paid",-ad],["Less balance paid at handover",-b.hc.bal],["Less security deposit held",-b.hc.dep],[st>0?"Customer pays now":"Refund to customer",Math.abs(st)]);return{rows,sum,pay:st}}
+  rows.push(["Total charges",sum]);const bal=sum-PR.adv;rows.push(["Less advance paid",-PR.adv],[bal<0?"Refund due to customer":"Balance due",Math.abs(bal)]);
+  return{rows,sum};
+}
+function tbl(rows,cls){return`<table class="${cls}">${rows.map((r,j)=>`<tr${/^(Total|Balance|Refund|Customer)/.test(r[0])?' class="t"':""}><td>${esc(r[0])}</td><td>${r[1]<0?"- ":""}${inr(Math.abs(r[1]))}</td></tr>`).join("")}</table>`}
+
+function form(){return{i:+$("car").value,f:$("from").value,t:$("to").value,plan:$("plan").value,ov:$("ov").value,okm:$("okm").value,ai:aiA,cpr:$("cpr").value,cx:[1,2,3].map(n=>({l:$("cl"+n).value.trim(),a:+$("ca"+n).value||0}))}}
+function refreshCars(){
+  const sel=$("car"),v=sel.value,f=$("from").value,t=$("to").value,ok=f&&t&&t>=f;
+  sel.innerHTML=C.map((c,j)=>{if(c[8]&&String(j)!==v)return"";const busy=ok&&B.some(b=>b.id!=editId&&ACT.includes(b.status)&&b.i==j&&b.f<=t&&b.t>=f);return`<option value="${j}">${vl(c)} (${K[c[5]].n})${ok?(busy?" - BOOKED":" - free"):""}</option>`}).join("");sel.value=v||"0";
+}
+function updNow(){const q=calc(form());$("nowc").textContent=q?`Collect now before handing over: balance ${inr(Math.max(0,q.total-PR.adv))} + security deposit ${inr(PR.dep)} = ${inr(Math.max(0,q.total-PR.adv)+PR.dep)}`:""}
+function renderQ(){refreshCars();updNow();
+  const q=calc(form()),o=$("qo");if(!q){o.textContent="Pick a car and valid dates.";return}
+  const c=C[q.i],free=C.filter((x,j)=>!x[8]&&!B.some(b=>b.id!=editId&&ACT.includes(b.status)&&b.i==j&&b.f<=q.t&&b.t>=q.f)).length;
+  let h=tbl([...q.L,["Total rental",q.total]],"q")+`<div class="mu" style="margin-top:8px">${q.km.toLocaleString("en-IN")} km included${q.km!=q.kmWas?` (negotiated; standard ${q.kmWas.toLocaleString("en-IN")})`:""} | extra km ${inr(c[6])}/km | ${free} of ${C.filter(x=>!x[8]).length} cars free on these dates</div>`;
+  {const dd=docList(c).filter(x=>x.v=="expires"&&x.date<q.t);dd.forEach(x=>{h+=`<div class="wn">${esc(vl(c))}: ${esc(x.l)} ${x.date<todayS()?"has expired":"expires on "+fy(x.date)}, before this trip ends.</div>`})}
+  if(q.clash)h+=`<div class="wn">This car already has a confirmed booking overlapping these dates.</div>`;
+  h+=q.N.map(n=>`<div class="mu">Pricing note: ${esc(n)}</div>`).join("");o.innerHTML=h;renderAI();
+}
+async function sset(key,value){const r=await sb.from("team_settings").upsert({account_id:AID,key,value},{onConflict:"account_id,key"});return r.error?r.error.message:null}
+async function save(b){
+  const{error}=await sb.from("team_bookings").upsert({account_id:AID,id:b.id,at:b.at,data:JSON.parse(JSON.stringify(b))},{onConflict:"account_id,id"});
+  if(error){msg("Could not save: "+error.message);return}
+  const j=B.findIndex(x=>x.id==b.id);if(j<0)B.push(b);else B[j]=b;renderAll();
+}
+const _saveRaw=save;save=async function(b){document.body.classList.add("busy");try{await _saveRaw(b)}finally{document.body.classList.remove("busy")}};
+const nextNo=k=>B.reduce((m,b)=>{const x=parseInt(String(b[k]||"").split("B").pop(),10);return x>m?x:m},0)+1;
+function endEdit(){editId=null;["cn","cp","ca","cl","ov","okm","nt","o0","cpr","cmp","cl1","ca1","cl2","ca2","cl3","ca3","dm0"].forEach(x=>$(x).value="");aiA=null;aiS=null;$("f0").value=12;$("now").checked=false;$("nowpay").checked=false;$("nowf").style.display="none";$("rcu").textContent="";$("pt").value="09:00";$("dtm").value="23:00";$("cfm").style.display="inline-block";$("pn").style.display="block";$("sv").textContent="Save as quote";$("svp").textContent="Save quote and download PDF";$("sc").style.display="none";renderQ()}
+function startEdit(b){
+  editId=b.id;$("car").value=b.i;$("from").value=b.f;$("to").value=b.t;$("plan").value=b.plan;
+  $("cn").value=b.name||"";$("cp").value=b.phone||"";$("ca").value=b.aadhaar||"";$("cl").value=b.dl||"";$("ov").value=b.ov||"";$("okm").value=b.okm||"";$("pt").value=b.pt||"09:00";$("dtm").value=b.dt||"23:00";
+  $("nt").value=b.nt||"";$("cpr").value=b.cpr||"";$("cmp").value=b.cmp||"";[1,2,3].forEach(n=>{const x=(b.cx||[])[n-1]||{};$("cl"+n).value=x.l||"";$("ca"+n).value=x.a||""});$("cpd").open=!!(b.cpr||b.cmp||(b.cx||[]).some(x=>x.l));aiA=b.ai?b.ai.pct:null;aiS=null;$("cfm").style.display="none";$("pn").style.display="none";$("sv").textContent="Update booking";$("svp").textContent="Update and download quote PDF";$("sc").style.display="inline-block";tab(2);renderQ();
+}
+async function newBooking(mode){
+  const q=calc(form());if(!q){msg("Pick a car and valid dates.");return}
+  const nm=$("cn").value.trim(),ph=$("cp").value.replace(/\D/g,""),cf=mode=="confirm"&&!editId,nw=cf&&$("now").checked;
+  if(cf){
+    if(!nm||ph.length<10){flag([...(!nm?["cn"]:[]),...(ph.length<10?["cp"]:[])],"Enter the customer name and a 10-digit phone number to confirm.");return}
+    if(q.clash){msg("This vehicle already has a booking for these dates. Pick another vehicle or dates.","warn");return}
+    {const dd=docList(C[q.i]).filter(x=>x.v=="expires"&&x.date<q.t);if(dd.length&&!(await askConfirm("A vehicle document expires before the trip ends",`${vl(C[q.i])}: ${dd.map(x=>x.l+" ("+fy(x.date)+")").join(", ")}. Confirm the booking anyway?`,"Confirm anyway")))return}
+    {const miss=nw?[...($("o0").value===""?["o0"]:[]),...(!$("ca").value.trim()?["ca"]:[]),...(!$("cl").value.trim()?["cl"]:[]),...(!$("nowpay").checked?["nowpay"]:[])]:[];if(miss.length){flag(miss,"To hand over the car now, enter the odometer reading, Aadhaar and driving licence, and tick Payment collected.");return}}
+  }
+  if(mode=="wa"&&ph.length<10){flag(["cp"],"Enter the customer's phone number to send on WhatsApp.");return}
+  msg("");
+  const f={i:q.i,f:q.f,t:q.t,d:q.d,plan:q.plan,L:q.L,total:q.total,km:q.km,per:q.per,ov:+$("ov").value||0,okm:+$("okm").value||0,pt:$("pt").value||"09:00",dt:$("dtm").value||"23:00",name:nm||"Customer",phone:$("cp").value.trim(),aadhaar:$("ca").value.trim(),dl:$("cl").value.trim(),nt:$("nt").value.trim(),cpr:+$("cpr").value||0,cmp:+$("cmp").value||0,cx:[1,2,3].map(n=>({l:$("cl"+n).value.trim(),a:+$("ca"+n).value||0})).filter(x=>x.l&&x.a),ai:aiA!=null?{pct:aiA,reason:(aiS&&aiS.reason)||(editId&&B.find(x=>x.id==editId)&&B.find(x=>x.id==editId).ai?B.find(x=>x.id==editId).ai.reason:""),at:Date.now()}:null};
+  let b;
+  if(editId){b=B.find(x=>x.id==editId);if(!b){endEdit();return}Object.assign(b,f);if(b.status=="Completed"&&b.ret)b.inv=invCalc(b,b.ret)}
+  else{b={id:"b"+Date.now(),at:Date.now(),status:cf?(nw?"Picked up":"Confirmed"):"Quoted",qno:"Q-2026-B"+pad(nextNo("qno")),...f};
+    if(cf){b.adv=PR.adv;b.ac=Date.now();if(nw){b.hc={bal:Math.max(0,q.total-PR.adv),dep:PR.dep,at:Date.now()};b.odo0=+$("o0").value;b.fuel0=Math.min(12,Math.max(0,+$("f0").value||0));b.pa=Date.now();b.dmg0=$("dm0").value.trim()}}}
+  logEv(b,editId?"Booking edited":cf?(nw?"Created, confirmed and handed over":"Created and confirmed"):"Quote created");if(mode=="wa")waShare(b,"quote");await save(b);if(mode=="pdf"||mode=="wa")pdf("quote",b);endEdit();tab(1);
+  if(cf)msg(`${b.qno} confirmed${nw?" and car handed over":""}.`);
+}
+function autofill(){
+  const p=$("cp").value.replace(/\D/g,"").slice(-10);if(p.length<10){$("rcu").textContent="";return}
+  const m=B.filter(b=>String(b.phone||"").replace(/\D/g,"").slice(-10)==p&&b.id!=editId).sort((a,b)=>b.at-a.at);
+  if(!m.length){$("rcu").textContent="";return}
+  const l=m[0];if(!$("cn").value)$("cn").value=l.name||"";if(!$("ca").value)$("ca").value=l.aadhaar||"";if(!$("cl").value)$("cl").value=l.dl||"";
+  $("rcu").textContent=`Returning customer: ${m.length} earlier booking(s). Details filled in.`;
+}
+function custRows(src){
+  let rw=src.map(r=>[r[0],r[1]]),fold=0;
+  rw=rw.filter(r=>{if(/^(Festive surge|Raised to floor|AI pricing adjustment)/.test(String(r[0]))){fold+=r[1];return false}return true});
+  if(fold&&rw.length)rw[0][1]+=fold;
+  return rw.map(r=>[String(r[0]).replace(/^(.*?): (\d+) day\(s\) x Rs [\d,]+ \((\d+) km\/day\)$/,"$1: $2 day(s), $3 km/day").replace(/^Negotiated \(was.*\)$/,r[1]<0?"Special discount":"Price adjustment").replace(/^(\d+)-day package \(between.*\)$/,"$1-day package").replace(/^(\d+) days at 30-day package per-day rate \(assumption\)$/,"$1 days long-term rate"),r[1]]);
+}
+const BTN=(a,id,l,s)=>`<button${s?' class="s"':""} data-a="${a}" data-id="${id}">${l}</button>`;
+function todayS(){return new Date().toLocaleDateString("en-CA")}
+function nowLocal(){return new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,16)}
+function schedRet(b){return new Date(b.t+"T"+(b.dt||"23:00"))}
+function lateOf(v,b){return v?Math.max(0,Math.round((new Date(v)-schedRet(b))/36e5*100)/100):0}
+function qfOk(b,t,now){return qf=="pick"?b.status=="Confirmed"&&b.f==t:qf=="ret"?b.status=="Picked up"&&b.t==t:qf=="out"?b.status=="Picked up":qf=="over"?b.status=="Picked up"&&schedRet(b)<now:qf=="quo"?b.status=="Quoted":qf=="pay"?b.status=="Completed"&&(b.paid===false||(!b.hc&&b.depRef===false)):true}
+function waShare(b,kind){
+  let p=String(b.phone||"").replace(/\D/g,"");if(p.length==10)p="91"+p;
+  const c=C[b.i],n=S.biz||"",m=kind=="quote"?`Hello ${b.name}, here is your quotation ${b.qno} from ${n}.\n${vl(c)}, ${b.f} to ${b.t}\nTotal rental: ${inr(b.total)} (${b.km.toLocaleString("en-IN")} km included)\nAn advance of ${inr(PR.adv)} confirms the booking; the balance and a ${inr(PR.dep)} refundable deposit are payable at delivery. The PDF is attached.`:`Hello ${b.name}, thank you for choosing ${n}. Your invoice ${b.ino} for the ${vl(c)} (${b.f} to ${b.t}) is attached.\nInvoice total: ${inr(b.inv.sum)}. ${b.inv.pay!=null?(b.inv.pay>0?"Amount payable now: "+inr(b.inv.pay):"Refund due to you: "+inr(-b.inv.pay)):"Balance due: "+inr(Math.max(0,b.inv.sum-PR.adv))}.`;
+  window.open(`https://wa.me/${p}?text=${encodeURIComponent(m)}`,"_blank");
+}
+function acts(b){const id=b.id,s=b.status;let p="";
+  if(s=="Quoted")p=BTN("conf",id,"Confirm booking");
+  if(s=="Confirmed")p=BTN("pick",id,"Hand over car");
+  if(s=="Picked up")p=BTN("done",id,"Return car");
+  if(s=="Completed")p=BTN("vinv",id,"View invoice");
+  const m=(s=="Quoted"||s=="Confirmed"?BTN("cancel",id,"Cancel booking",1):"")+BTN("edit",id,"Edit booking",1)+BTN("dup",id,"Duplicate",1)+(s=="Completed"?BTN("eret",id,"Edit return",1)+BTN("ipdf",id,"Invoice PDF",1)+BTN("iwa",id,"WhatsApp invoice",1)+(b.paid===false?BTN("paid",id,b.hc?"Mark settled":"Mark balance paid",1):"")+(!b.hc&&b.depRef===false?BTN("dep",id,"Mark deposit refunded",1):""):"")+BTN("vq",id,"View quote",1)+BTN("qpdf",id,"Quote PDF",1)+BTN("qwa",id,"WhatsApp quote",1)+BTN("hist",id,"History",1)+(HASPH&&(b.photos||[]).length?BTN("ph",id,`Photos (${b.photos.length})`,1):"")+(ROLE=="owner"?BTN("del",id,"Delete",1):"");
+  return p+`<details class="mn"><summary>More</summary>${m}</details>`}
+function row(b){const od=b.status=="Picked up"&&schedRet(b)<new Date();
+  return`<tr><td>${esc(b.ino||b.qno)}<div class="mu">${esc(b.name)} ${esc(b.phone)}</div>${b.nt?`<div class="mu">${esc(b.nt)}</div>`:""}${b.dmg1?'<div class="wn">Damage noted at return</div>':""}</td><td>${esc(vl(C[b.i]))}<div class="mu">${b.f} ${esc(b.pt||"")} to ${b.t} ${esc(b.dt||"")}</div></td><td><span class="b b-${b.status.replace(" ","")}">${b.status}</span>${od?' <span class="wn">overdue</span>':""}${b.status=="Completed"&&b.paid===false?` <span class="wn">${b.hc?"settlement pending":"payment pending"}</span>`:""}${b.status=="Completed"&&!b.hc&&b.depRef===false?' <span class="wn">deposit to refund</span>':""}<div>${inr(b.status=="Completed"?b.inv.sum:b.total)}</div></td><td>${acts(b)}</td></tr>`}
+function addD(d,n){return iso(new Date(+D(d)+n*864e5))}
+function renderCal(){if(window.matchMedia&&window.matchMedia("(max-width:700px)").matches){renderAgenda();return}
+  if(!cs)cs=todayS();const days=Array.from({length:14},(_,k)=>addD(cs,k));
+  let h=`<tr><td class="cn1"></td>${days.map(d=>`<td class="ch${isF(d)?" fe":""}">${d.slice(8)}<div class="mu">${"SMTWTFS"[D(d).getUTCDay()]}</div></td>`).join("")}</tr>`;
+  C.forEach((c,j)=>{if(c[8])return;h+=`<tr><td class="cn1">${esc(vl(c))}</td>`+days.map(d=>{const b=B.find(x=>x.i==j&&x.status!="Cancelled"&&x.f<=d&&x.t>=d);return b?`<td class="cb ${b.status.replace(" ","")}" data-bid="${b.id}" title="${esc(b.name)} ${b.f} to ${b.t} (${b.status})"></td>`:`<td class="ce" data-car="${j}" data-day="${d}"></td>`}).join("")+"</tr>"});
+  $("cal").innerHTML=h;$("cr").textContent=`${cs} to ${days[13]}`;
+}
+function startNew(j,d){endEdit();$("car").value=j;$("from").value=d;$("to").value=d;tab(2);renderQ()}
+function renderAll(){
+  const t=todayS(),now=new Date(),fl=$("flt").value,sq=$("srch").value.trim().toLowerCase(),df=$("dfrom").value,dt2=$("dto").value;
+  const cnt={pick:B.filter(b=>b.status=="Confirmed"&&b.f==t).length,ret:B.filter(b=>b.status=="Picked up"&&b.t==t).length,out:B.filter(b=>b.status=="Picked up").length,over:B.filter(b=>b.status=="Picked up"&&schedRet(b)<now).length,quo:B.filter(b=>b.status=="Quoted").length,pay:B.filter(b=>b.status=="Completed"&&(b.paid===false||(!b.hc&&b.depRef===false))).length};
+  const lab={pick:"Pickups today",ret:"Returns today",out:"Cars out now",over:"Overdue returns",quo:"Awaiting confirmation",pay:"Payments pending"};
+  $("sc2").innerHTML=Object.keys(lab).map(k=>`<div class="sc" data-q="${k}"><b>${cnt[k]}</b>${lab[k]}</div>`).join("");
+  $("qfc").innerHTML=Object.keys(lab).map(k=>`<span class="chip${qf==k?" on":""}" data-q="${k}">${lab[k]} (${cnt[k]})</span>`).join("")+(qf?`<span class="chip" data-q="">Clear filter</span>`:"");
+  const L=B.filter(b=>(!fl||b.status==fl)&&qfOk(b,t,now)&&(!df||b.t>=df)&&(!dt2||b.f<=dt2)&&(!sq||`${b.name} ${b.phone} ${vl(C[b.i])} ${b.qno} ${b.ino||""}`.toLowerCase().includes(sq))).sort((a,b)=>b.at-a.at);
+  $("tb").innerHTML=L.map(row).join("")||(B.length?`<tr><td>No bookings match these filters. <button class="s" data-a="clr">Clear filters</button></td></tr>`:`<tr><td>No bookings yet. <button data-a="newb">Create your first booking</button></td></tr>`);updBadge();
+  renderCal();renderQ();renderAlerts();if(PG=="home")renderHome();if(cur)renderInv();if(PG=="an")renderAn();
+}
+function rvals(b){
+  const o1=$("o1").value===""?null:+$("o1").value,f1=$("f1").value===""?null:+$("f1").value,has=b.odo0!=null;
+  return{km:has?Math.max(0,(o1||0)-b.odo0):(+$("km").value||0),fb:(b.fuel0!=null&&f1!=null)?Math.max(0,b.fuel0-f1):(has?0:(+$("fb").value||0)),ft:+$("ft").value||0,dirty:$("dr").value=="1",late:lateOf($("ar").value,b),ar:$("ar").value,o1,f1,disc:Math.max(0,+$("dsc").value||0),dreason:$("dsr").value.trim(),dmc:Math.max(0,+$("dmc").value||0)};
+}
+function renderInv(){
+  const b=B.find(x=>x.id==cur);if(!b){cur=null;$("rp").style.display="none";return}
+  const r=rvals(b),has=b.odo0!=null;$("lg1").style.display=has?"none":"grid";
+  {const pd=(b.adv||PR.adv)+(b.hc?b.hc.bal+b.hc.dep:0);$("rh").textContent=`${b.name} | ${vl(C[b.i])} | ${b.f} to ${b.t} | ${b.qno} | Paid so far ${inr(pd)} (${b.hc?`advance ${inr(b.adv||PR.adv)} + balance ${inr(b.hc.bal)} + deposit ${inr(b.hc.dep)}`:`advance ${inr(b.adv||PR.adv)}`}) | ${b.km.toLocaleString("en-IN")} km included | due back ${b.t} ${b.dt||"23:00"} | late ${r.late} hr`}
+  $("os").textContent=has?`Out: ${b.odo0} km, fuel ${b.fuel0}/12. Driven: ${r.km} km. Fuel short: ${r.fb} bar(s).`:"No pickup readings saved for this booking, so enter km driven and fuel short below.";
+  const iv=invCalc(b,r);$("io").innerHTML=tbl(iv.rows,"iv");$("dpw").style.display=b.hc?"none":"flex";$("pdl").textContent=b.hc?(iv.pay>0?" Customer payment received":" Refund paid to customer"):" Balance payment received";
+}
+const actH=async e=>{
+  const a=e.target.dataset.a,b=B.find(x=>x.id==e.target.dataset.id);
+  if(a=="clr"){qf="";["srch","flt","dfrom","dto"].forEach(x=>$(x).value="");renderAll();return}
+  if(a=="newb"){endEdit();go("new");return}
+  if(!a||!b)return;
+  if(a=="conf"){b.status="Confirmed";b.adv=PR.adv;b.ac=Date.now();logEv(b,"Confirmed (advance received)");await save(b);toast(b.qno+" confirmed.","ok")}
+  if(a=="pick")openHand(b);
+  if(a=="paid"){b.paid=true;if(b.hc)b.depRef=true;logEv(b,"Marked settled");save(b)}
+  if(a=="dep"){b.depRef=true;logEv(b,"Deposit refunded");save(b)}
+  if(a=="cancel"){if(!(await askConfirm("Cancel this booking?",`${b.qno} for ${b.name}. The app does not track what happens to the advance after cancelling.`,"Cancel booking",true)))return;const prev=b.status;b.status="Cancelled";logEv(b,"Cancelled");await save(b);toast("Booking cancelled.","ok",{l:"Undo",f:async()=>{b.status=prev;logEv(b,"Cancellation undone");await save(b)}})}
+  if(a=="dup")startDup(b);
+  if(a=="vq")viewDoc(b,"quote");
+  if(a=="vinv")viewDoc(b,"invoice");
+  if(a=="hist")viewHist(b);
+  if(a=="ph"&&HASPH)showPhotos(b);
+  if(a=="qpdf")pdf("quote",b);
+  if(a=="ipdf")pdf("invoice",b);
+  if(a=="qwa"){waShare(b,"quote");pdf("quote",b)}
+  if(a=="iwa"){waShare(b,"invoice");pdf("invoice",b)}
+  if(a=="edit")startEdit(b);
+  if(a=="del"){
+    if(!(await askConfirm("Delete this booking?",`${b.ino||b.qno} for ${b.name} will be removed${b.status=="Completed"?", including its invoice record":""}.`,"Delete",true)))return;
+    const copy=JSON.parse(JSON.stringify(b)),er=await removeBooking(b.id);if(er){msg("Could not delete: "+er,"err");return}
+    B=B.filter(x=>x.id!=b.id);if(cur==b.id){cur=null;$("rp").style.display="none"}if(editId==b.id)endEdit();renderAll();
+    toast(`${copy.ino||copy.qno} deleted.`,"ok",{l:"Undo",f:async()=>{await save(copy);toast("Booking restored.","ok")}});
+  }
+  if(a=="done"||a=="eret"){cur=b.id;const r=b.ret||{};$("o1").value=r.o1!=null?r.o1:"";$("f1").value=r.f1!=null?r.f1:"";$("km").value=r.km||0;$("fb").value=r.fb||0;$("ar").value=r.ar||nowLocal();$("ft").value=r.ft||0;$("dr").value=r.dirty?"1":"0";$("rn").value=b.rn||"";$("dm1").value=b.dmg1||"";$("dmc").value=r.dmc||0;$("dsc").value=r.disc||0;$("dsr").value=r.dreason||"";$("pd").checked=b.paid!==false;$("dp").checked=b.depRef!==false;$("rmsg").textContent="";$("rp").style.display="block";renderInv()}
+};
+$("tb").onclick=actH;$("hwork").onclick=actH;
+let hid=null;
+function openHand(b){hid=b.id;$("hh").textContent=`${b.qno} | ${b.name} | ${vl(C[b.i])} | ${b.f} ${b.pt||""} to ${b.t} ${b.dt||""}`;$("ho").value="";$("hf").value=12;$("ha").value=b.aadhaar||"";$("hl").value=b.dl||"";$("hn").value=b.dmg0||"";$("hm").textContent="";if($("hph"))$("hph").value="";const bl=Math.max(0,b.total-(b.adv||PR.adv));$("hcl").textContent=`Collect now before handing over: balance ${inr(bl)} + security deposit ${inr(PR.dep)} = ${inr(bl+PR.dep)}`;$("hpay").checked=false;$("hp").style.display="block"}
+$("hgo").onclick=async()=>{
+  const b=B.find(x=>x.id==hid);if(!b)return;
+  if($("ho").value===""||$("hf").value===""||!$("ha").value.trim()||!$("hl").value.trim()){markEmpty(["ho","hf","ha","hl"]);$("hm").textContent="Enter the odometer reading, fuel bars, Aadhaar and driving licence.";return}
+  if(!$("hpay").checked){$("hm").textContent="Collect the payment, then tick Payment collected, before handing over the car.";return}
+  b.hc={bal:Math.max(0,b.total-(b.adv||PR.adv)),dep:PR.dep,at:Date.now()};b.odo0=+$("ho").value;b.fuel0=Math.min(12,Math.max(0,+$("hf").value));b.aadhaar=$("ha").value.trim();b.dl=$("hl").value.trim();b.dmg0=$("hn").value.trim();b.status="Picked up";b.pa=Date.now();logEv(b,"Car handed over");
+  hid=null;$("hp").style.display="none";if($("hph")&&$("hph").files.length){msg("Uploading photos...","warn");await uploadPhotos($("hph").files,b,"pick");$("hph").value=""}await save(b);toast(`${b.qno}: car handed over.`,"ok");
+};
+$("hc").onclick=()=>{hid=null;$("hp").style.display="none"};
+async function closeBooking(wa){
+  const b=B.find(x=>x.id==cur);if(!b)return;
+  if(b.odo0!=null){const o=$("o1").value;if(o===""||+o<b.odo0){$("o1").classList.add("bad");$("rmsg").textContent="Enter the return odometer reading (it can't be lower than the pickup reading of "+b.odo0+").";return}if($("f1").value===""){$("f1").classList.add("bad");$("rmsg").textContent="Enter the fuel bars at return.";return}}
+  const r=rvals(b);b.inv=invCalc(b,r);b.ret=r;b.rn=$("rn").value.trim();b.dmg1=$("dm1").value.trim();b.status="Completed";b.paid=$("pd").checked;b.depRef=b.hc?$("pd").checked:$("dp").checked;b.odo1=r.o1;b.fuel1=r.f1;b.ino=b.ino||"INV-2026-B"+pad(nextNo("ino"));
+  logEv(b,"Returned and invoiced ("+b.ino+")");
+  if(wa)waShare(b,"invoice");
+  cur=null;$("rp").style.display="none";if($("rph")&&$("rph").files.length){msg("Uploading photos...","warn");await uploadPhotos($("rph").files,b,"ret");$("rph").value=""}await save(b);pdf("invoice",b);toast(`${b.ino} created.`,"ok");
+}
+$("fin").onclick=()=>closeBooking(false);$("fin2").onclick=()=>closeBooking(true);
+$("rc").onclick=()=>{cur=null;$("rp").style.display="none"};
+$("sc").onclick=()=>{endEdit();tab(1)};$("sv").onclick=()=>newBooking("quote");$("svp").onclick=()=>newBooking("pdf");$("cfm").onclick=()=>newBooking("confirm");$("svw").onclick=()=>newBooking("wa");$("now").onchange=()=>{$("nowf").style.display=$("now").checked?"grid":"none"};
+$("flt").onchange=renderAll;
+const DS={biz:"Your Business Name",addr:"",ph:"",em:"",gst:"",pay:"UPI: placeholder@upi (to be updated)",qt:"An advance confirms the booking. The remaining rental amount and a refundable security deposit are payable at delivery, before the car is handed over.\nLate return: a grace period applies, then an hourly rate; beyond the set number of hours it counts as a full day.\nFuel is charged per bar short. Fastag as per actual. A cleaning charge applies if the car is returned dirty.",it:"Security deposit is adjusted against extra charges and any balance is refunded on return.",ft:"",upi:"",col:"#0b5fff"};
+let S={...DS};const SID={biz:"sBiz",addr:"sAddr",ph:"sPh",em:"sEm",gst:"sGst",pay:"sPay",qt:"sQt",it:"sIt",ft:"sFt",upi:"sUpi",col:"sCol"};
+function showLogo(){$("lgp").src=S.logo||"";$("lgp").style.display=S.logo?"block":"none";$("lgx").style.display=S.logo?"inline-block":"none"}
+function fillS(){for(const k in SID)$(SID[k]).value=S[k]==null?"":S[k];showLogo();renderBrand()}
+fillS();
+$("ss").onclick=async()=>{const n={logo:S.logo||"",logoR:S.logoR||1};for(const k in SID)n[k]=$(SID[k]).value;S=n;
+  const er=await sset("company",n);if(er){msg("Could not save settings: "+er);return}msg("");$("sm").textContent="Settings saved. New PDFs will use them."};
+let AN={daily:[],trips:[]};
+const ld=ts=>new Date(ts).toLocaleDateString("en-CA");
+const revDate=b=>b.ret&&b.ret.ar?b.ret.ar.slice(0,10):(b.ca?ld(b.ca):b.t);
+const ftOf=b=>(b.ret&&b.ret.ft)||0,revOf=b=>b.inv?b.inv.sum-ftOf(b):0;
+const nd=(a,b)=>Math.round((D(b)-D(a))/864e5)+1;
+const sm=(a,f)=>a.reduce((t,x)=>t+f(x),0);
+const pc=x=>(Math.round(x*10)/10)+"%";
+function parts(b){const r={rental:b.total,xkm:0,late:0,fuel:0,clean:0,dmg:0,disc:0,ft:ftOf(b)};(b.inv.rows||[]).forEach(x=>{const l=String(x[0]),a=x[1];if(/^Extra km/.test(l))r.xkm+=a;else if(/^Late/.test(l))r.late+=a;else if(/^Fuel/.test(l))r.fuel+=a;else if(/^Cleaning/.test(l))r.clean+=a;else if(/^Damage/.test(l))r.dmg+=a;else if(/^Additional discount/.test(l))r.disc+=a});return r}
+function setPreset(v){
+  const t=new Date(),y=t.getFullYear(),m=t.getMonth(),ds=d=>d.toLocaleDateString("en-CA");let f,to;
+  if(v=="tm"){f=new Date(y,m,1);to=new Date(y,m+1,0)}else if(v=="lm"){f=new Date(y,m-1,1);to=new Date(y,m,0)}
+  else if(v=="3m"){f=new Date(y,m-2,1);to=new Date(y,m+1,0)}else if(v=="6m"){f=new Date(y,m-5,1);to=new Date(y,m+1,0)}
+  else if(v=="ty"){f=new Date(y,0,1);to=new Date(y,11,31)}
+  else{const d=B.filter(b=>b.f).map(b=>b.f).sort();f=d.length?D(d[0]):t;f=new Date(f.getUTCFullYear?f.getUTCFullYear():y,f.getUTCMonth?f.getUTCMonth():m,1);to=new Date(y,m+1,0)}
+  $("anf").value=ds(f);$("ant").value=ds(to);
+}
+function events(){
+  const E=[];B.forEach(b=>{
+    if(["Confirmed","Picked up","Completed"].includes(b.status)){E.push({d:b.ac?ld(b.ac):ld(b.at),k:"adv",a:b.adv||b.advance||PR.adv,b})}
+    if(b.hc&&b.hc.at){E.push({d:ld(b.hc.at),k:"bal",a:b.hc.bal,b});E.push({d:ld(b.hc.at),k:"dep",a:b.hc.dep,b})}
+    if(b.status=="Completed"&&b.inv&&b.paid!==false){const d=revDate(b),x=b.hc?b.inv.pay:b.inv.sum-PR.adv;if(x>0)E.push({d,k:"fin",a:x,b});else if(x<0)E.push({d,k:"ref",a:-x,b})}
+  });return E;
+}
+const n0=x=>(x<0?"-":"")+Math.round(Math.abs(x)).toLocaleString("en-IN"),z0=x=>x?n0(x):"\u2013";
+const fd=d=>new Date(d+"T00:00:00Z").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"});
+function bars(data){
+  const cw=$("anc").clientWidth||600,n=data.length,st=Math.max(46,(cw-20)/n),W=Math.max(cw,Math.round(st*n+20)),H=200,mx=Math.max(1,...data.map(x=>x.v)),bw=Math.min(56,st-12);
+  return`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block"><line x1="10" x2="${W-10}" y1="${H-30}" y2="${H-30}" style="stroke:var(--bd)"/>`+data.map((x,i)=>{const h=Math.round((H-60)*x.v/mx),xx=10+i*st+(st-bw)/2;return`<rect x="${xx}" y="${H-30-h}" width="${bw}" height="${h}" rx="3" style="fill:var(--ac)"/><text x="${xx+bw/2}" y="${H-34-h}" text-anchor="middle" font-size="11" style="fill:var(--fg)">${x.v>=100000?Math.round(x.v/1000)/100+"L":x.v>=1000?Math.round(x.v/100)/10+"k":x.v}</text><text x="${xx+bw/2}" y="${H-12}" text-anchor="middle" font-size="11" style="fill:var(--mu)">${x.l}</text>`}).join("")+"</svg>";
+}
+const csvq=rows=>rows.map(r=>r.map(x=>{x=String(x==null?"":x);return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x}).join(",")).join("\n");
+function dlCsv(name,rows){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+csvq(rows)],{type:"text/csv"}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function renderAn(){
+  const f=$("anf").value,t=$("ant").value;if(!f||!t||t<f){$("ank").innerHTML='<div class="mu">Choose a valid period.</div>';return}
+  const inR=d=>d>=f&&d<=t,done=B.filter(b=>b.status=="Completed"&&b.inv&&inR(revDate(b))),EV=events().filter(e=>inR(e.d));
+  const rev=sm(done,revOf),cin=sm(EV.filter(e=>e.k!="ref"),e=>e.a),cout=sm(EV.filter(e=>e.k=="ref"),e=>e.a),days=sm(done,b=>b.d||0);
+  const rd=nd(f,t),act=C.filter(c=>!c[8]).length||1,ovl=b=>Math.max(0,nd(b.f>f?b.f:f,b.t<t?b.t:t));
+  const live=B.filter(b=>["Confirmed","Picked up","Completed"].includes(b.status)),booked=sm(live,ovl);
+  const held=sm(B.filter(b=>b.status=="Picked up"&&b.hc),b=>b.hc.dep),owed=sm(B.filter(b=>b.status=="Completed"&&b.paid===false&&b.inv),b=>b.hc?Math.max(0,b.inv.pay):Math.max(0,b.inv.sum-PR.adv));
+  const c0=B.filter(b=>inR(ld(b.at))),cv0=c0.filter(b=>["Confirmed","Picked up","Completed"].includes(b.status)).length;
+  const K2=[[inr(rev),"Revenue"],[inr(cin-cout),"Net cash in period"],[inr(cin),"Cash received"],[inr(cout),"Refunds paid out"],[done.length,"Trips completed"],[days,"Rental days"],[done.length?inr(rev/done.length):"-","Revenue per trip"],[days?inr(rev/days):"-","Revenue per rental day"],[pc(booked/(rd*act)*100),"Fleet utilisation"],[inr(held),"Deposits held now"],[inr(owed),"Outstanding to collect"],[c0.length?pc(cv0/c0.length*100):"-","Quote to booking conversion"]];
+  $("ank").innerHTML=K2.map(x=>`<div class="sc" style="cursor:default"><b>${x[0]}</b>${x[1]}</div>`).join("");
+  // months
+  const ms=[];let y=+f.slice(0,4),m=+f.slice(5,7);const ey=+t.slice(0,4),em=+t.slice(5,7);
+  while((y<ey||(y==ey&&m<=em))&&ms.length<60){ms.push(`${y}-${String(m).padStart(2,"0")}`);m++;if(m>12){m=1;y++}}
+  let prev=null;const mr=ms.map(k=>{const d=done.filter(b=>revDate(b).slice(0,7)==k),e=EV.filter(x=>x.d.slice(0,7)==k),p=d.map(parts),r=sm(d,revOf);
+    const row={k,l:new Date(+k.slice(0,4),+k.slice(5,7)-1,1).toLocaleDateString("en-GB",{month:"short",year:"2-digit"}),n:d.length,rev:r,ex:sm(p,x=>x.xkm+x.late+x.fuel+x.clean+x.dmg),dc:0-sm(p,x=>x.disc),ci:sm(e.filter(x=>x.k!="ref"),x=>x.a),co:sm(e.filter(x=>x.k=="ref"),x=>x.a),g:prev>0?pc((r-prev)/prev*100):"-"};prev=r;return row});
+  $("anc").innerHTML=mr.some(x=>x.rev>0)?bars(mr.map(x=>({l:x.l,v:Math.round(x.rev)}))):'<div class="mu" style="padding:12px 0">No completed trips in this period yet.</div>';
+    $("anm").innerHTML="<tr><td>Month</td><td>Trips</td><td>Revenue</td><td>Change</td><td>Per trip</td><td>Extras</td><td>Discounts</td><td>Cash in</td><td>Refunds</td><td>Net cash</td></tr>"+mr.map(x=>`<tr><td>${x.l}</td><td>${x.n}</td><td>${n0(x.rev)}</td><td>${x.g}</td><td>${x.n?n0(x.rev/x.n):"\u2013"}</td><td>${z0(x.ex)}</td><td>${z0(x.dc)}</td><td>${n0(x.ci)}</td><td>${z0(x.co)}</td><td>${n0(x.ci-x.co)}</td></tr>`).join("");
+  // daily
+  const dk=[...new Set([...EV.map(e=>e.d),...done.map(revDate)])].sort().reverse(),tot={adv:0,bal:0,dep:0,fin:0,ref:0,rev:0};
+  const dr=dk.map(d=>{const e=EV.filter(x=>x.d==d),g=k=>sm(e.filter(x=>x.k==k),x=>x.a),r=sm(done.filter(b=>revDate(b)==d),revOf),o={d,adv:g("adv"),bal:g("bal"),dep:g("dep"),fin:g("fin"),ref:g("ref"),rev:r};Object.keys(tot).forEach(k=>tot[k]+=o[k]);return o});
+  const net=o=>o.adv+o.bal+o.dep+o.fin-o.ref;
+  $("and").innerHTML="<tr><td>Date</td><td>Advances</td><td>Handover balance</td><td>Deposits in</td><td>Final settlement</td><td>Refunds out</td><td>Net cash</td><td>Revenue</td></tr>"+(dr.length?`<tr class="tt"><td>Total</td><td>${n0(tot.adv)}</td><td>${n0(tot.bal)}</td><td>${n0(tot.dep)}</td><td>${n0(tot.fin)}</td><td>${n0(tot.ref)}</td><td>${n0(net(tot))}</td><td>${n0(tot.rev)}</td></tr>`:"")+dr.map(o=>`<tr><td style="white-space:nowrap">${fd(o.d)}</td><td>${z0(o.adv)}</td><td>${z0(o.bal)}</td><td>${z0(o.dep)}</td><td>${z0(o.fin)}</td><td>${z0(o.ref)}</td><td>${n0(net(o))}</td><td>${z0(o.rev)}</td></tr>`).join("")||"<tr><td>No activity in this period.</td></tr>";
+  AN.daily=[["Date","Advances","Balance at handover","Deposits in","Final settlement in","Refunds out","Net cash","Revenue (returns)"],...dr.map(o=>[o.d,o.adv,o.bal,o.dep,o.fin,o.ref,net(o),Math.round(o.rev)])];
+  AN.trips=[["Return date","Invoice","Booking","Customer","Phone","Vehicle","Pickup","Return","Days","Rental","Extra km","Late","Fuel","Cleaning","Discount","Fastag","Revenue excl Fastag"],...done.map(b=>{const p=parts(b);return[revDate(b),b.ino,b.qno,b.name,b.phone,vl(C[b.i]),b.f,b.t,b.d,Math.round(p.rental),p.xkm,p.late,p.fuel,p.clean,p.disc,p.ft,Math.round(revOf(b))]})];
+  // vehicles
+  const vr=C.map((c,j)=>{const d=done.filter(b=>b.i==j),r=sm(d,revOf),bd=sm(live.filter(b=>b.i==j),ovl);return{n:vl(c),off:c[8],t:d.length,r,bd,u:bd/rd*100}}).filter(x=>!x.off||x.t||x.bd).sort((a,b)=>b.r-a.r);
+  $("anv").innerHTML="<tr><td>Vehicle</td><td>Trips</td><td>Revenue</td><td>Booked days</td><td>Utilisation</td><td>Per booked day</td></tr>"+vr.map(x=>`<tr><td>${esc(x.n)}</td><td>${x.t}</td><td>${n0(x.r)}</td><td>${x.bd}</td><td>${pc(x.u)}</td><td>${x.bd?n0(x.r/x.bd):"\u2013"}</td></tr>`).join("");
+  $("anmm").innerHTML=mr.map(x=>`<div class="mcard"><div class="r1"><b>${x.l}</b><b>${n0(x.rev)}</b></div><div class="mu">${x.n} trips | ${x.g} vs last month | ${x.n?n0(x.rev/x.n):"-"} per trip</div><div class="mu">Cash in ${n0(x.ci)} | Refunds ${z0(x.co)} | Net ${n0(x.ci-x.co)}</div></div>`).join("");
+  $("andm").innerHTML=(dr.length?`<div class="mcard"><div class="r1"><b>Total</b><b>${n0(net(tot))}</b></div><div class="mu">Net cash. Revenue ${n0(tot.rev)}</div></div>`:"")+dr.map(o=>`<div class="mcard"><div class="r1"><b>${fd(o.d)}</b><b>${n0(net(o))}</b></div><div class="mu">${[["Advances",o.adv],["Handover",o.bal],["Deposits",o.dep],["Final",o.fin],["Refunds",-o.ref],["Revenue",o.rev]].filter(x=>x[1]).map(x=>x[0]+" "+n0(x[1])).join(" | ")||"No amounts"}</div></div>`).join("")||'<div class="mu">No activity in this period.</div>';
+  $("anvm").innerHTML=vr.map(x=>`<div class="mcard"><div class="r1"><b>${esc(x.n)}</b><b>${n0(x.r)}</b></div><div class="mu">${x.t} trips | ${x.bd} booked days | ${pc(x.u)} utilised | ${x.bd?n0(x.r/x.bd):"-"} per booked day</div></div>`).join("");
+  // breakdown
+  const P=done.map(parts),bk=[["Rental (after surge and price discounts)",sm(P,x=>x.rental)],["Extra km",sm(P,x=>x.xkm)],["Late fees",sm(P,x=>x.late)],["Fuel",sm(P,x=>x.fuel)],["Cleaning",sm(P,x=>x.clean)],["Damage charges",sm(P,x=>x.dmg)],["Additional discounts",sm(P,x=>x.disc)]];
+  $("anb").innerHTML=bk.map(x=>`<tr><td>${x[0]}</td><td>${x[1]<0?"- ":""}${inr(Math.abs(x[1]))}</td></tr>`).join("")+`<tr class="tt"><td>Revenue</td><td>${inr(rev)}</td></tr><tr><td>Fastag recovered (not counted)</td><td>${inr(sm(P,x=>x.ft))}</td></tr>`;
+  const cg={};done.forEach(b=>{const n=K[C[b.i][5]]?K[C[b.i][5]].n:"Other";cg[n]=cg[n]||{t:0,r:0};cg[n].t++;cg[n].r+=revOf(b)});
+  $("ang").innerHTML="<tr><td>Category</td><td>Trips</td><td>Revenue</td></tr>"+Object.keys(cg).map(k=>`<tr><td>${k}</td><td>${cg[k].t}</td><td>${inr(cg[k].r)}</td></tr>`).join("")||"";
+  // pipeline
+  const cr=B.filter(b=>inR(ld(b.at))),cn=s2=>cr.filter(b=>s2.includes(b.status)).length,cv=cn(["Confirmed","Picked up","Completed"]);
+  $("anl").innerHTML=`<tr><td>Quotes and bookings created</td><td>${cr.length}</td></tr><tr><td>Still quoted</td><td>${cn(["Quoted"])}</td></tr><tr><td>Confirmed or on the road</td><td>${cn(["Confirmed","Picked up"])}</td></tr><tr><td>Completed</td><td>${cn(["Completed"])}</td></tr><tr><td>Cancelled</td><td>${cn(["Cancelled"])}</td></tr><tr class="tt"><td>Quote to booking conversion</td><td>${cr.length?pc(cv/cr.length*100):"-"}</td></tr>`;
+  // customers
+  const cu={};done.forEach(b=>{const k=String(b.phone||"").replace(/\D/g,"").slice(-10)||b.name;cu[k]=cu[k]||{n:b.name,t:0,r:0};cu[k].t++;cu[k].r+=revOf(b)});
+  const all={};live.forEach(b=>{const k=String(b.phone||"").replace(/\D/g,"").slice(-10)||b.name;all[k]=(all[k]||0)+1});const rp=Object.values(all).filter(x=>x>1).length;
+  $("anu").innerHTML="<tr><td>Customer</td><td>Trips</td><td>Revenue</td></tr>"+Object.values(cu).sort((a,b)=>b.r-a.r).slice(0,5).map(x=>`<tr><td>${esc(x.n)}</td><td>${x.t}</td><td>${inr(x.r)}</td></tr>`).join("")+`<tr class="tt"><td>Repeat customers (all time)</td><td colspan="2">${rp} of ${Object.keys(all).length}</td></tr>`;
+}
+function renderAI(){
+  const o=$("aio");if(!aiS&&aiA==null){o.innerHTML="";return}
+  if(aiA!=null){o.innerHTML=`<b style="color:var(--fg)">AI pricing applied: ${aiA>0?"+":""}${aiA}%.</b> ${aiS?esc(aiS.reason):""} <button class="s" data-ai="rm" style="margin-top:0">Remove</button>`;return}
+  const pv=calc({...form(),ai:aiS.pct,cpr:0,cx:[],ov:0,okm:0});
+  o.innerHTML=`<div><b style="color:var(--fg)">AI suggests ${aiS.pct>0?"+":""}${aiS.pct}%</b>${pv?` (${inr(pv.total)} total, about ${inr(pv.total/pv.d)}/day)`:""}${aiS.conf?`, confidence ${esc(aiS.conf)}`:""}</div><div>${esc(aiS.reason)}</div>${aiS.watch?`<div class="wn">${esc(aiS.watch)}</div>`:""}<button data-ai="ap" style="margin-top:6px">Apply to this quote</button><button class="s" data-ai="no" style="margin-top:6px">Dismiss</button>`;
+}
+async function askAI(){
+  const o=$("aio"),base=calc({...form(),ai:null,cpr:0,cx:[],ov:0,okm:0});
+  if(!base){o.textContent="Pick a car and valid dates first.";return}
+  const c=C[base.i],k=K[c[5]],t0=todayS(),days=span(base.f,base.t),rate=base.plan==400?c[4]:c[3],std=rate*base.d;
+  const cat=C.filter(x=>!x[8]&&x[5]==c[5]),free=cat.filter(x=>!B.some(b=>b.id!=editId&&ACT.includes(b.status)&&C[b.i]===x&&b.f<=base.t&&b.t>=base.f)).length;
+  const act=C.filter(x=>!x[8]).length||1,w1=addD(t0,13),bd=sm(B.filter(b=>ACT.includes(b.status)),b=>Math.max(0,nd(b.f>t0?b.f:t0,b.t<w1?b.t:w1)));
+  const rc=B.filter(b=>b.at>Date.now()-14*864e5),cmp=+$("cmp").value||null;
+  const facts={city:PR.city||"India",vehicle:`${c[0]} ${c[1]} ${c[2]}`,category:k.n,standard_rate_per_day:rate,km_plan_per_day:base.plan,days:base.d,pickup_date:base.f,drop_date:base.t,weekdays:days.map(d=>["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][D(d).getUTCDay()]),festive_dates_in_trip:days.filter(isF),lead_time_days:Math.round((D(base.f)-D(t0))/864e5),vehicles_free_in_category_on_these_dates:free,vehicles_in_category:cat.length,fleet_utilisation_next_14_days_percent:Math.round(bd/(act*14)*100),competitor_price_per_day:cmp,price_floor_per_day:k.fl,rule_based_suggestion_percent:Math.round((base.total/std-1)*1000)/10,rule_based_note:base.N[0]||"no adjustment",quotes_created_last_14_days:rc.length,of_which_confirmed:rc.filter(b=>["Confirmed","Picked up","Completed"].includes(b.status)).length};
+  const prompt=`You are a pricing analyst for a small self-drive car rental operator in ${PR.city||"India"}. Competitors include Revv and Zoomcar. Suggest ONE percentage adjustment to the operator's standard rate-card price for this quote.
+Operator's usual rules: festive long weekends +25% to +30%; bookings of 5 or more days outside festive dates -20% to -30%; short weekday bookings -10% to -15% when demand is low; otherwise 0%. Hard limits: -30% to +30%. The final price can never go below the floor. You may go outside the usual ranges (within the hard limits) only when the competitor price or demand clearly justifies it, and say so in the reason.
+If a competitor price is given, it was entered by the operator for a comparable car and the same dates; weigh it, but remember the operator may reasonably price a little above or below depending on car age, delivery and service. If it is null, do not invent a competitor price.
+Facts (JSON): ${JSON.stringify(facts)}
+Reply with JSON only, no other text: {"adjustment_percent": number, "confidence": "low" or "medium" or "high", "reason": "max 30 words, plain English for the operator", "watch_out": "optional, max 20 words, or empty string"}`;
+  const bt=$("aib1");bt.disabled=true;bt.textContent="Asking AI...";o.textContent="";
+  try{
+    const r=await aiJson(prompt),pct=Number(r&&r.adjustment_percent);
+    if(!isFinite(pct))throw new Error("The AI reply could not be read. Try again.");
+    aiS={pct:Math.max(-30,Math.min(30,Math.round(pct))),reason:String(r.reason||"").slice(0,300),conf:String(r.confidence||""),watch:String(r.watch_out||"").slice(0,200)};aiA=null;renderAI();
+  }catch(e){o.textContent=e&&e.code=="not_granted"?"Permission to use AI for pricing was not granted.":e&&e.code=="rate_limited"?"Too many requests. Try again in a minute.":"AI pricing failed: "+((e&&e.message)||"unknown error")}
+  bt.disabled=false;bt.textContent="AI price suggestion";
+}
+$("aib1").onclick=askAI;
+$("aio").onclick=e=>{const a=e.target.dataset.ai;if(!a)return;if(a=="ap")aiA=aiS.pct;if(a=="rm"){aiA=null;aiS=null}if(a=="no")aiS=null;renderQ()};
+let ROLE="staff",AID=null;const HASPH=true;
+async function removeBooking(id){const r=await sb.from("team_bookings").delete().eq("id",id).eq("account_id",AID);return r.error?r.error.message:null}
+async function saveFile(name,text,mime){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:mime||"text/plain"}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function savePdf(d,name){d.save(name)}
+
+let LASTBK=null,vdoc=null;
+function logEv(b,t){(b.log=b.log||[]).push({t:Date.now(),e:t,by:EML||"you"})}
+function askConfirm(title,body,ok,danger){return new Promise(res=>{$("cdt").textContent=title;$("cdb").textContent=body;$("cdy").textContent=ok||"Confirm";$("cdy").style.background=danger?"#b91c1c":"";$("cd").style.display="block";const fin=v=>{$("cd").style.display="none";$("cdy").onclick=null;$("cdn").onclick=null;res(v)};$("cdy").onclick=()=>fin(true);$("cdn").onclick=()=>fin(false)})}
+function flag(ids,text){ids.forEach(x=>{const e=$(x);if(e)e.classList.add("bad")});const f=$(ids[0]);if(f&&f.focus){f.focus();if(f.scrollIntoView)f.scrollIntoView({block:"center"})}msg(text,"warn")}
+function markEmpty(ids){ids.forEach(x=>{const e=$(x);if(e&&String(e.value).trim()==="")e.classList.add("bad")})}
+document.addEventListener("input",e=>{if(e.target.classList)e.target.classList.remove("bad")});
+document.addEventListener("change",e=>{if(e.target.classList)e.target.classList.remove("bad")});
+$("toast").onclick=e=>{if(e.target.dataset.t=="act"&&msg.act){const f=msg.act.f;msg.act=null;msg("");f()}};
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function applyPrefs(){const t=lsGet("sd_theme")||"auto",z=lsGet("sd_zoom")||"1";if(t=="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);document.documentElement.style.zoom=z;$("thm").value=t;$("tsz").value=z}
+$("thm").onchange=()=>{lsSet("sd_theme",$("thm").value);applyPrefs()};$("tsz").onchange=()=>{lsSet("sd_zoom",$("tsz").value);applyPrefs()};applyPrefs();
+function renderBrand(){const nm=S.biz&&S.biz!=DS.biz?S.biz:"Self-Drive";$("nbr").innerHTML=(S.logo?`<img src="${esc(S.logo)}" alt="" style="height:26px;vertical-align:middle;margin-right:8px">`:"")+esc(nm);const h=$("hlogo");if(h){h.src=S.logo||"";h.style.display=S.logo?"block":"none"}}
+function applyRole(){const o=ROLE=="owner";["an","set"].forEach(p=>{const a=document.querySelector(`#nav a[data-go="${p}"]`);if(a)a.style.display=o?"":"none"});const vd=$("vd");if(vd)vd.style.display=o?"":"none";const tc=$("teamc");if(tc)tc.style.display=o?"":"none";const ie=$("imj");if(ie)ie.closest(".card").style.display=o?"":"none";renderFleet();renderAll()}
+function updBadge(){try{if(!navigator.setAppBadge)return;const n=B.filter(b=>b.status=="Picked up"&&schedRet(b)<new Date()).length+B.filter(b=>b.status=="Completed"&&(b.paid===false||(!b.hc&&b.depRef===false))).length;n?navigator.setAppBadge(n):navigator.clearAppBadge()}catch(e){}}
+// ---- customer lookup on Home
+function custStats(ph){const p=String(ph).replace(/\D/g,"").slice(-10);if(p.length<10)return null;const m=B.filter(b=>String(b.phone||"").replace(/\D/g,"").slice(-10)==p).sort((a,b)=>b.at-a.at);return{m,l:m[0],done:m.filter(b=>b.status=="Completed"),rev:sm(m.filter(b=>b.status=="Completed"&&b.inv),revOf)}}
+$("hqp").oninput=()=>{const s=custStats($("hqp").value);$("hqr").innerHTML=!s?"":!s.m.length?"New customer. No earlier bookings.":`<b style="color:var(--fg)">Returning customer: ${esc(s.l.name)}</b> | ${s.done.length} completed trip(s), ${s.m.length} booking(s) in total | billed ${inr(s.rev)} | last: ${esc(vl(C[s.l.i]))}, ${s.l.f}`};
+$("hqb").onclick=()=>{const ph=$("hqp").value.trim();endEdit();go("new");$("cp").value=ph;autofill();renderQ()};
+$("hqp").onkeydown=e=>{if(e.key=="Enter")$("hqb").onclick()};
+// ---- duplicate
+function startDup(b){
+  endEdit();let f=addD(b.f,7);const t0=todayS();while(f<t0)f=addD(f,7);
+  go("new");$("car").value=b.i;$("from").value=f;$("to").value=addD(f,(b.d||1)-1);$("plan").value=b.plan||200;$("pt").value=b.pt||"09:00";$("dtm").value=b.dt||"23:00";
+  $("cn").value=b.name||"";$("cp").value=b.phone||"";$("ca").value=b.aadhaar||"";$("cl").value=b.dl||"";$("nt").value=b.nt||"";
+  $("cpr").value=b.cpr||"";$("cmp").value=b.cmp||"";[1,2,3].forEach(n=>{const x=(b.cx||[])[n-1]||{};$("cl"+n).value=x.l||"";$("ca"+n).value=x.a||""});
+  renderQ();toast("Duplicated from "+b.qno+". Check the dates and price before confirming.","ok");
+}
+// ---- documents: saved copies, preview, print
+function mkSnap(kind,b){
+  const q=kind=="quote",c=C[b.i],rows=custRows(q?[...b.L,["Total rental",b.total]]:b.inv.rows);
+  const tx=[...(!q&&b.dmg0?["Marks recorded at pickup: "+b.dmg0.replace(/\n/g," / ")]:[]),...(!q&&b.dmg1?["Damage noted at return: "+b.dmg1.replace(/\n/g," / ")]:[]),...String(q?S.qt:S.it).split("\n"),...String(S.pay||"").split("\n"),S.ft].map(x=>String(x||"").trim()).filter(Boolean);
+  const am=q?PR.adv:(b.inv.pay!=null?Math.max(0,b.inv.pay):Math.max(0,b.inv.sum-PR.adv)),no=q?b.qno:b.ino;
+  return{kind,no,date:todayS(),at:Date.now(),
+    biz:{biz:S.biz||"",addr:S.addr||"",ph:S.ph||"",em:S.em||"",gst:S.gst||"",col:S.col||"#0b5fff",logo:(S.logo&&S.logo.length<60000)?S.logo:"",logoR:S.logoR||1},
+    name:b.name,phone:b.phone||"",car:vl(c),period:`${b.f} ${b.pt||""} to ${b.t} ${b.dt||""} (${b.d} day(s))`,
+    kmline:`Km included: ${b.km.toLocaleString("en-IN")}   Extra km: ${inr(c[6])}/km`,
+    odo:(!q&&b.odo0!=null&&b.odo1!=null)?`Odometer: ${b.odo0} out, ${b.odo1} in   Fuel: ${b.fuel0}/12 out, ${b.fuel1}/12 in`:"",
+    rows,tx,qr:(S.upi&&am>0)?{url:`upi://pay?pa=${S.upi}&pn=${encodeURIComponent(S.biz||"")}&am=${am}&cu=INR&tn=${encodeURIComponent(no)}`,amt:am}:null};
+}
+function drawPdf(sn){
+  const d=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),q=sn.kind=="quote",Z=sn.biz;let y=18;
+  const col=[1,3,5].map(k=>parseInt((Z.col||"#0b5fff").slice(k,k+2),16)||0);let x0=15;
+  if(Z.logo){try{const h=14,w=h*(Z.logoR||1);d.addImage(Z.logo,"JPEG",15,10,w,h);x0=15+w+4}catch(e){}}
+  d.setFont("helvetica","bold");d.setTextColor(...col);d.setFontSize(16);d.text(Z.biz||"",x0,y);d.setFontSize(14);d.text(q?"QUOTATION":"INVOICE",195,y,{align:"right"});
+  d.setFont("helvetica","normal");d.setTextColor(70,70,70);d.setFontSize(9);[...String(Z.addr||"").split("\n"),[Z.ph&&"Phone: "+Z.ph,Z.em&&"Email: "+Z.em].filter(Boolean).join("   "),Z.gst&&"GSTIN: "+Z.gst].map(x=>String(x||"").trim()).filter(Boolean).forEach(l=>{y+=5;d.text(l,x0,y)});
+  y=Math.max(y,26)+4;d.setDrawColor(...col);d.setLineWidth(.7);d.line(15,y,195,y);d.setLineWidth(.2);d.setDrawColor(0,0,0);d.setTextColor(0,0,0);
+  d.setFontSize(10);y+=8;d.text(`${sn.no}   Date: ${sn.date}`,15,y);
+  y+=10;d.text(`Customer: ${sn.name}   Phone: ${sn.phone||"-"}`,15,y);
+  y+=6;d.text(`Car: ${sn.car}   Period: ${sn.period}`,15,y);
+  y+=6;d.text(sn.kmline,15,y);
+  if(sn.odo){y+=6;d.text(sn.odo,15,y)}
+  y+=10;d.line(15,y-4,195,y-4);
+  sn.rows.forEach(r=>{const ls=d.splitTextToSize(String(r[0]),140);if(y>270){d.addPage();y=20}
+    const bold=/^(Total|Balance|Refund|Customer)/.test(r[0]);d.setFont("helvetica",bold?"bold":"normal");d.setTextColor(...(bold?col:[0,0,0]));d.text(ls,15,y);d.text((r[1]<0?"- ":"")+inr(Math.abs(r[1])),195,y,{align:"right"});y+=6*ls.length});
+  d.setFont("helvetica","normal");d.setTextColor(0,0,0);y+=6;
+  sn.tx.forEach(t=>{d.splitTextToSize(t,180).forEach(l=>{if(y>280){d.addPage();y=20}d.text(l,15,y);y+=5})});
+  if(sn.qr&&window.qrcode){try{const qr=qrcode(0,"M");qr.addData(sn.qr.url);qr.make();const n=qr.getModuleCount(),sz=32,u=sz/n;if(y>230){d.addPage();y=20}y+=4;d.setFillColor(0,0,0);for(let r2=0;r2<n;r2++)for(let c2=0;c2<n;c2++)if(qr.isDark(r2,c2))d.rect(15+c2*u,y+r2*u,u,u,"F");d.setFontSize(9);d.text(`Scan to pay ${inr(sn.qr.amt)} by UPI`,15+sz+4,y+sz/2)}catch(e){}}
+  return d;
+}
+function pdf(kind,b,sn){
+  if(!window.jspdf){msg("PDF library did not load. Check your connection and reload.","err");return}
+  const fresh=!sn;sn=sn||mkSnap(kind,b);
+  if(fresh){b.snaps=b.snaps||{};b.snaps[kind]=sn;logEv(b,kind=="quote"?"Quote PDF generated":"Invoice PDF generated");save(b)}
+  savePdf(drawPdf(sn),`${sn.no}.pdf`);
+}
+function docHtml(sn){
+  const Z=sn.biz,cc=/^#[0-9a-f]{6}$/i.test(Z.col)?Z.col:"#0b5fff";let qr="";
+  if(sn.qr&&window.qrcode){try{const x=qrcode(0,"M");x.addData(sn.qr.url);x.make();qr=x.createSvgTag(3)}catch(e){}}
+  return `<div class="dp"><div class="dh">${Z.logo?`<img src="${esc(Z.logo)}" alt="">`:""}<div><b style="color:${cc};font-size:16px">${esc(Z.biz)}</b><div class="mu">${esc(Z.addr).replace(/\n/g,"<br>")}</div><div class="mu">${[Z.ph&&"Phone: "+esc(Z.ph),Z.em&&"Email: "+esc(Z.em),Z.gst&&"GSTIN: "+esc(Z.gst)].filter(Boolean).join(" | ")}</div></div><div style="margin-left:auto;font-weight:700;color:${cc}">${sn.kind=="quote"?"QUOTATION":"INVOICE"}</div></div>
+<div class="dm">${esc(sn.no)} | Date: ${esc(sn.date)}<br>Customer: ${esc(sn.name)} | Phone: ${esc(sn.phone||"-")}<br>Car: ${esc(sn.car)}<br>Period: ${esc(sn.period)}<br>${esc(sn.kmline)}${sn.odo?"<br>"+esc(sn.odo):""}</div>${tbl(sn.rows,"iv")}<div class="mu" style="margin-top:10px">${sn.tx.map(esc).join("<br>")}</div>${qr?`<div style="margin-top:10px">${qr}<div class="mu">Scan to pay ${inr(sn.qr.amt)} by UPI</div></div>`:""}</div>`;
+}
+function viewDoc(b,kind){
+  const saved=b.snaps&&b.snaps[kind],sn=saved||mkSnap(kind,b);vdoc={b,kind,sn,saved:!!saved};
+  $("dvt").textContent=(kind=="quote"?"Quotation ":"Invoice ")+sn.no;
+  $("dvs").textContent=saved?`Saved copy from ${new Date(sn.at).toLocaleString("en-GB")}. This is exactly what was generated then.`:"Preview of the current details. No copy has been saved yet.";
+  $("dvb").innerHTML=docHtml(sn);$("dv").style.display="block";
+}
+$("dvc").onclick=()=>{$("dv").style.display="none"};
+$("dvd").onclick=()=>{if(vdoc)pdf(vdoc.kind,vdoc.b,vdoc.saved?vdoc.sn:undefined)};
+$("dvp").onclick=()=>window.print();
+$("dvw").onclick=()=>{if(vdoc)waShare(vdoc.b,vdoc.kind)};
+$("dvr").onclick=async()=>{if(!vdoc)return;const b=vdoc.b;b.snaps=b.snaps||{};b.snaps[vdoc.kind]=mkSnap(vdoc.kind,b);logEv(b,(vdoc.kind=="quote"?"Quote":"Invoice")+" copy refreshed");await save(b);viewDoc(b,vdoc.kind)};
+// ---- history and photos
+function viewHist(b){$("hvh").textContent=`${b.qno} | ${b.name}`;const L=[{t:b.at,e:"Booking created",by:""},...(b.log||[])].sort((x,y)=>x.t-y.t);$("hvb").innerHTML=L.map(x=>`<div class="wr"><div>${esc(x.e)}</div><div class="mu">${new Date(x.t).toLocaleString("en-GB")}${x.by?" | "+esc(x.by):""}</div></div>`).join("");$("hv").style.display="block"}
+$("hvc").onclick=()=>{$("hv").style.display="none"};
+function resizeImg(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const m=1280,k=Math.min(1,m/Math.max(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k),cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(im,0,0,w,h);cv.toBlob(bl=>bl?res(bl):rej(new Error("Could not process image")),"image/jpeg",.72)};im.onerror=()=>rej(new Error("Not an image"));im.src=r.result};r.onerror=rej;r.readAsDataURL(f)})}
+async function uploadPhotos(files,b,stage){
+  const L=[...(files||[])].slice(0,8);let n=0;
+  for(let i=0;i<L.length;i++){try{const bl=await resizeImg(L[i]),p=`${AID}/${b.id}/${stage}-${Date.now()}-${i}.jpg`,r=await sb.storage.from("damage-photos").upload(p,bl,{contentType:"image/jpeg"});if(r.error)throw r.error;(b.photos=b.photos||[]).push({p,s:stage,at:Date.now()});n++}catch(e){msg("A photo could not be uploaded: "+(e.message||"error"),"err")}}
+  return n;
+}
+async function showPhotos(b){
+  const L=b.photos||[];$("pvh").textContent=`${b.qno} | ${b.name}`;$("pvb").textContent="Loading...";$("pv").style.display="block";
+  if(!L.length){$("pvb").innerHTML='<div class="mu">No photos for this booking.</div>';return}
+  const r=await sb.storage.from("damage-photos").createSignedUrls(L.map(x=>x.p),3600);
+  if(r.error){$("pvb").textContent="Could not load photos: "+r.error.message;return}
+  $("pvb").innerHTML='<div class="pg">'+r.data.map((u,i)=>`<a href="${esc(u.signedUrl)}" target="_blank" rel="noopener"><img src="${esc(u.signedUrl)}" alt=""><div class="mu">${L[i].s=="pick"?"At pickup":"At return"} ${ld(L[i].at)}</div></a>`).join("")+'</div>';
+}
+$("pvc").onclick=()=>{$("pv").style.display="none"};
+async function loadTeam(){
+  const r=await sb.from("team_members").select("user_id,email,role");if(r.error){$("teamt").innerHTML=`<tr><td>${esc(r.error.message)}</td></tr>`;return}
+  $("teamt").innerHTML="<tr><td>Email</td><td>Role</td><td></td></tr>"+r.data.map(m=>`<tr><td>${esc(m.email||"")}</td><td>${esc(m.role)}</td><td>${m.role=="owner"?"":`<button class="s" data-rm="${esc(m.user_id)}">Remove</button>`}</td></tr>`).join("");
+}
+$("tm2").onclick=async()=>{const e=$("tm1").value.trim();if(!e){flag(["tm1"],"Enter the staff member's email.");return}const r=await sb.rpc("add_staff",{p_email:e});if(r.error){$("tmm").textContent=r.error.message;return}$("tmm").textContent="Added.";$("tm1").value="";loadTeam()};
+$("teamt").onclick=async e=>{const u=e.target.dataset.rm;if(!u)return;if(!(await askConfirm("Remove this team member?","They will no longer be able to open this account.","Remove",true)))return;const r=await sb.rpc("remove_staff",{p_user:u});if(r.error){msg("Could not remove: "+r.error.message,"err");return}loadTeam()};
+
+// ---- export / backup
+async function exportData(){
+  const o={exported:new Date().toISOString(),pricing:PR,company:S,fleet:{v:C.map(toV)},festive:{text:$("fest").value},bookings:B};
+  await saveFile("my-data.json",JSON.stringify(o,null,1),"application/json");
+  LASTBK=todayS();sset("meta",{lastBackup:LASTBK});toast("Backup downloaded.","ok");if(PG=="home")renderHome();
+}
+$("exj").onclick=exportData;
+// ---- calendar agenda (phone)
+function renderAgenda(){
+  if(!cs)cs=todayS();const days=Array.from({length:14},(_,k)=>addD(cs,k)),act=C.filter(c=>!c[8]).length;
+  $("cr").textContent=`${cs} to ${days[13]}`;
+  $("cagenda").innerHTML=days.map(d=>{
+    const bs=B.filter(b=>b.status!="Cancelled"&&b.f<=d&&b.t>=d),busy=new Set(bs.filter(b=>["Confirmed","Picked up","Completed"].includes(b.status)).map(b=>b.i)),free=act-C.filter((c,j)=>!c[8]&&busy.has(j)).length;
+    return`<div class="card" style="padding:10px;margin:8px 0"><div style="display:flex;justify-content:space-between;align-items:center"><b>${fd(d)}${isF(d)?' <span class="wn">festive</span>':""}</b><span class="mu">${free} of ${act} free</span></div>${bs.length?bs.map(b=>`<div class="wr" data-bid="${b.id}" style="cursor:pointer"><div><b>${esc(vl(C[b.i]))}</b><div class="mu">${esc(b.name)}${b.f==d?" | pickup "+esc(b.pt||""):""}${b.t==d?" | return "+esc(b.dt||""):""}</div></div><span class="b b-${b.status.replace(" ","")}">${b.status}</span></div>`).join(""):'<div class="mu" style="padding:4px 0">No bookings.</div>'}<button class="s" data-nd="${d}" style="margin-top:6px">Book for this day</button></div>`}).join("");
+}
+$("cagenda").onclick=e=>{const nd=e.target.dataset.nd;if(nd){endEdit();$("from").value=nd;$("to").value=nd;go("new");renderQ();return}const r=e.target.closest("[data-bid]");if(r){const b=B.find(x=>x.id==r.dataset.bid);if(b){$("srch").value=b.ino||b.qno;$("flt").value="";qf="";go("bookings")}}};
+if(window.matchMedia)window.matchMedia("(max-width:700px)").addEventListener("change",()=>{renderCal();if(PG=="an")renderAn()});
+// ---- keyboard shortcuts
+document.addEventListener("keydown",e=>{
+  const t=e.target,typing=t&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+  if(e.key=="Escape"){if($("cd").style.display!="none")return;if($("hp").style.display!="none")$("hc").onclick();if($("rp").style.display!="none")$("rc").onclick();["dv","hv","pv"].forEach(id=>{const m=$(id);if(m)m.style.display="none"});document.body.classList.remove("nvo");return}
+  if(typing||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key=="n"||e.key=="N"){e.preventDefault();endEdit();go("new")}
+  else if(e.key=="/"){e.preventDefault();go("bookings");$("srch").focus()}
+  else if(e.key=="h"||e.key=="H")go("home");
+  else if(e.key=="?")toast("Shortcuts: N new booking, / search bookings, H home, Esc close a window.","warn");
+});
+let PG="home";
+const PT={home:"Home",bookings:"Bookings",new:"New booking",cal:"Calendar",fleet:"Fleet",an:"Analytics",set:"Settings",acct:"Account"},PV={home:"v0",bookings:"v1",new:"v2",cal:"v4",fleet:"v5",an:"v6",set:"v3",acct:"v7"};
+function go(p){
+  if(!PV[p]||!$(PV[p])||((p=="an"||p=="set")&&ROLE!="owner"))p="home";PG=p;
+  Object.keys(PV).forEach(k=>{const e=$(PV[k]);if(e)e.style.display=k==p?"block":"none"});
+  document.querySelectorAll("#nav a[data-go]").forEach(a=>a.classList.toggle("on",a.dataset.go==p));
+  $("ptitle").textContent=PT[p];$("nb").style.display=p=="new"?"none":"";document.body.classList.remove("nvo");
+  if(p=="home")renderHome();if(p=="cal")renderCal();if(p=="fleet")renderFleet();if(p=="an")renderAn();if(p=="bookings")renderAll();if(p=="set")renderPricing();
+  window.scrollTo(0,0);
+}
+function tab(n){go({1:"bookings",2:"new",3:"set",4:"cal",5:"fleet",6:"an"}[n])}
+function greet(){const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening"}
+function wrow(b,btn,tag){return`<div class="wr"><div><b>${esc(b.name)}</b> <span class="mu">${esc(vl(C[b.i]))}</span>${tag||""}<div class="mu">${esc(b.qno)} | ${b.f} ${esc(b.pt||"")} to ${b.t} ${esc(b.dt||"")}</div></div><div>${btn}</div></div>`}
+function renderHome(){
+  const t=todayS(),now=new Date(),tm=addD(t,1);
+  $("hgreet").textContent=greet()+(S.biz&&S.biz!=DS.biz?", "+S.biz:"");
+  $("hdate").textContent=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  let sp="";
+  if(!PRset&&ROLE=="owner")sp+=`<div class="card"><b>Set up your pricing.</b> <span class="mu">Add your packages, minimum prices and policies before creating quotes.</span> <button class="s" data-go="set">Open Settings</button></div>`;
+  if(!C.length&&ROLE=="owner")sp+=`<div class="card"><b>Add your first vehicle.</b> <span class="mu">Quotes need at least one vehicle in Fleet.</span> <button class="s" data-go="fleet">Open Fleet</button></div>`;
+  if(ROLE=="owner"&&B.length>=3&&(!LASTBK||Math.round((new Date()-new Date(LASTBK))/864e5)>=30))sp+=`<div class="card"><b>Time for a backup.</b> <span class="mu">${LASTBK?"Your last backup was on "+LASTBK+".":"You have not downloaded a backup yet."} A copy of your data is worth keeping.</span> <button class="s" id="hbk">Download backup</button></div>`;
+  $("hsetup").innerHTML=sp;if($("hbk"))$("hbk").onclick=exportData;renderBrand();
+  const pk=B.filter(b=>b.status=="Confirmed"&&b.f<=t).sort((a,b)=>(a.f+(a.pt||""))<(b.f+(b.pt||""))?-1:1),rt=B.filter(b=>b.status=="Picked up"&&b.t<=t).sort((a,b)=>schedRet(a)-schedRet(b)),up=B.filter(b=>(b.status=="Confirmed"&&b.f==tm)||(b.status=="Picked up"&&b.t==tm));
+  let h=`<div class="sec" style="margin-top:0">Hand over today</div>`+(pk.length?pk.map(b=>wrow(b,BTN("pick",b.id,"Hand over car"),b.f<t?' <span class="rd">late pickup</span>':"")).join(""):`<div class="mu" style="padding:6px 0">No pickups due.</div>`);
+  h+=`<div class="sec">Returns due</div>`+(rt.length?rt.map(b=>wrow(b,BTN("done",b.id,"Return car"),schedRet(b)<now?' <span class="rd">overdue</span>':"")).join(""):`<div class="mu" style="padding:6px 0">No returns due.</div>`);
+  if(up.length)h+=`<div class="sec">Tomorrow</div>`+up.map(b=>wrow(b,"",` <span class="mu">${b.status=="Confirmed"?"pickup":"return"}</span>`)).join("");
+  $("hwork").innerHTML=h;
+  const done=B.filter(b=>b.status=="Completed"&&b.inv&&revDate(b).slice(0,7)==t.slice(0,7));
+  $("hmon").innerHTML=[[inr(sm(done,revOf)),"Revenue this month"],[done.length,"Trips completed this month"],[B.filter(b=>b.status=="Quoted").length,"Open quotes"],[B.filter(b=>b.status=="Confirmed").length,"Confirmed, not yet out"]].map(x=>`<div class="sc" style="cursor:default"><b>${x[0]}</b>${x[1]}</div>`).join("");
+}
+function mergePR(v){PR={...PR0,...v,H:{...PR0.H,...(v.H||{})},C:{...PR0.C,...(v.C||{})},S:{...PR0.S,...(v.S||{})}};PRset=true;mkK()}
+function renderPricing(){
+  const f=(id,v)=>{const e=$(id);if(e)e.value=v==null?"":v};
+  f("pCity",PR.city);f("pAdv",PR.adv);f("pDep",PR.dep);f("pFuel",PR.fuel);f("pCln",PR.cln);f("pGr",PR.gr);f("pFd",PR.fd);
+  $("ptb").innerHTML="<tr><td>Category</td><td>Late rate per hour</td><td>7-day package (1,000 km)</td><td>30-day package (3,000 km)</td><td>Minimum price per day</td></tr>"+["H","C","S"].map(k=>`<tr><td>${K[k].n}</td>${["hr","p7","p30","fl"].map(x=>`<td><input type="number" min="0" id="pc_${k}_${x}" value="${PR[k][x]}" style="width:100px"></td>`).join("")}</tr>`).join("");
+}
+$("psv").onclick=async()=>{
+  const n=x=>Math.max(0,+$(x).value||0),v={city:$("pCity").value.trim(),adv:n("pAdv"),dep:n("pDep"),fuel:n("pFuel"),cln:n("pCln"),gr:n("pGr"),fd:n("pFd")||6};
+  ["H","C","S"].forEach(k=>{v[k]={};["hr","p7","p30","fl"].forEach(x=>v[k][x]=n(`pc_${k}_${x}`))});
+  if(v.fd<=v.gr){$("pmsg").textContent="The full-day threshold must be higher than the grace period.";return}
+  const er=await sset("pricing",v);if(er){$("pmsg").textContent="Could not save: "+er;return}
+  mergePR(v);$("pmsg").textContent="Pricing saved.";renderAll();
+};
+document.querySelectorAll("#nav a[data-go]").forEach(a=>a.onclick=e=>{e.preventDefault();go(a.dataset.go)});
+$("mb").onclick=()=>document.body.classList.toggle("nvo");$("scrim").onclick=()=>document.body.classList.remove("nvo");$("nb").onclick=()=>{endEdit();go("new")};
+$("hsetup").onclick=e=>{const g=e.target.dataset.go;if(g)go(g)};
+$("qfc").onclick=e=>{const c=e.target.closest(".chip");if(!c)return;qf=c.dataset.q==qf?"":c.dataset.q;renderAll()};
+$("anp").onchange=()=>{setPreset($("anp").value);renderAn()};["anf","ant"].forEach(k=>$(k).onchange=renderAn);
+$("ex1").onclick=()=>dlCsv("daily-money.csv",AN.daily);$("ex2").onclick=()=>dlCsv("trips.csv",AN.trips);setPreset("6m");
+let vEdit=-1;
+$("ftpl").innerHTML='<option value="">Custom</option>'+RC.map((c,j)=>`<option value="${j}">${c[0]} ${c[1]} ${c[2]} - ${inr(c[3])}/day</option>`).join("");
+$("ftpl").onchange=()=>{const c=RC[$("ftpl").value];if(!c)return;$("vn").value=c[0];$("vg").value=c[1];$("vy").value=c[2];$("vc").value=c[5];$("vr2").value=c[3];$("vr4").value=c[4];$("vxk").value=c[6]};
+function clearV(){vEdit=-1;["vreg","vn","vy","vr2","vr4","vxk","vins","vpuc","vsvc","voth","vothd"].forEach(x=>$(x).value="");$("ftpl").value="";$("fh").textContent="Add a vehicle";$("vsave").textContent="Add vehicle";$("vcancel").style.display="none";$("vd").open=false}
+const DOCW=30,fy=d=>new Date(d+"T00:00:00Z").toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
+function docList(c){const d=c[9]||{},o=[];[["ins","Insurance","expires"],["puc","Pollution certificate","expires"],["svc","Service","due"]].forEach(([k,l,v])=>{if(d[k])o.push({l,date:d[k],v})});if(d.oth&&d.othn)o.push({l:d.othn,date:d.oth,v:"expires"});return o}
+function docChips(c){const t=todayS(),lim=addD(t,DOCW),L=docList(c);return L.length?L.map(x=>{const over=x.date<t,soon=!over&&x.date<=lim;return`<div class="${over?"rd":soon?"wn":"mu"}">${esc(x.l)}: ${fy(x.date)}${over?(x.v=="due"?" (overdue)":" (expired)"):soon?" (soon)":""}</div>`}).join(""):'<div class="mu">No dates added</div>'}
+function renderAlerts(){
+  const t=todayS(),lim=addD(t,DOCW),out=[];
+  C.forEach(c=>{if(c[8])return;docList(c).forEach(x=>{if(x.date<=lim)out.push({reg:vl(c),l:x.l,v:x.v,date:x.date,over:x.date<t,days:Math.round((D(x.date)-D(t))/864e5)})})});
+  out.sort((a,b)=>a.date<b.date?-1:1);
+  $("al").innerHTML=out.length?`<div class="card"><h2>Vehicle documents needing attention</h2>${out.slice(0,12).map(x=>{const txt=x.over?(x.v=="due"?`overdue by ${-x.days} day(s)`:`expired ${-x.days} day(s) ago`):x.days==0?(x.v=="due"?"due today":"expires today"):(x.v=="due"?`due in ${x.days} day(s)`:`expires in ${x.days} day(s)`);return`<div class="${x.over?"rd":"wn"}" style="font-size:14px">${esc(x.reg)}: ${esc(x.l)} ${txt} (${fy(x.date)})</div>`}).join("")}${out.length>12?`<div class="mu">and ${out.length-12} more, see the Fleet tab.</div>`:""}</div>`:"";
+}
+function renderFleet(){
+  const o=ROLE=="owner";
+  $("ft2").innerHTML="<tr><td><b>Registration</b></td><td><b>Vehicle</b></td><td><b>Rates</b></td><td><b>Documents</b></td><td></td></tr>"+(C.map((c,j)=>`<tr><td>${esc(c[7]||"(no registration yet)")}${c[8]?' <span class="b b-Cancelled">retired</span>':""}<div class="mu">${B.filter(b=>b.i==j).length} booking(s)</div></td><td>${esc(c[0]+" "+c[1]+" "+c[2])}<div class="mu">${K[c[5]]?K[c[5]].n:""}</div></td><td class="mu">${inr(c[3])} / ${inr(c[4])} per day<br>extra ${inr(c[6])}/km</td><td>${docChips(c)}</td><td>${o?`<button class="s" data-fa="edit" data-j="${j}">Edit</button><button class="s" data-fa="${c[8]?"on":"off"}" data-j="${j}">${c[8]?"Restore":"Retire"}</button>`:""}</td></tr>`).join("")||'<tr><td colspan="5" class="mu">No vehicles yet. Open "Add a vehicle" above to add your first one.</td></tr>');
+}
+async function saveFleet(){const er=await sset("fleet",{v:C.map(toV)});if(er){$("vmsg").textContent="Could not save: "+er;return false}return true}
+$("vsave").onclick=async()=>{
+  const reg=$("vreg").value.toUpperCase().replace(/\s+/g," ").trim(),n=$("vn").value.trim(),r2=+$("vr2").value,r4=+$("vr4").value,xk=+$("vxk").value,y=+$("vy").value,key=x=>String(x).replace(/\s/g,"");
+  if(!reg){$("vreg").classList.add("bad");$("vmsg").textContent="Enter the registration number.";return}
+  if(!n||!(r2>0)||!(r4>0)||!(xk>=0)||!$("vxk").value||!y){markEmpty(["vn","vy","vr2","vr4","vxk"]);$("vmsg").textContent="Fill in model, year, both daily prices and the extra km rate.";return}
+  if(C.some((c,j)=>j!=vEdit&&c[7]&&key(c[7])==key(reg))){$("vmsg").textContent="That registration number is already in the fleet.";return}
+  const row=[n,$("vg").value,y,r2,r4,$("vc").value,xk,reg,vEdit>=0?C[vEdit][8]:false,{ins:$("vins").value,puc:$("vpuc").value,svc:$("vsvc").value,oth:$("vothd").value,othn:$("voth").value.trim()}],old=C.slice(),was=vEdit;
+  if(was>=0)C[was]=row;else C.push(row);
+  if(!(await saveFleet())){C=old;return}
+  clearV();$("vmsg").textContent="";msg(was>=0?"Vehicle updated.":"Vehicle added.");renderAll();renderFleet();
+};
+$("vcancel").onclick=()=>{clearV();$("vmsg").textContent=""};
+$("ft2").onclick=async e=>{
+  const a=e.target.dataset.fa,j=+e.target.dataset.j;if(!a)return;const c=C[j];$("vmsg").textContent="";
+  if(a=="edit"){vEdit=j;$("ftpl").value="";$("vreg").value=c[7];$("vn").value=c[0];$("vg").value=c[1];$("vy").value=c[2];$("vc").value=c[5];$("vr2").value=c[3];$("vr4").value=c[4];$("vxk").value=c[6];{const dd=c[9]||{};$("vins").value=dd.ins||"";$("vpuc").value=dd.puc||"";$("vsvc").value=dd.svc||"";$("voth").value=dd.othn||"";$("vothd").value=dd.oth||""}$("fh").textContent="Edit vehicle";$("vsave").textContent="Update vehicle";$("vcancel").style.display="inline-block";$("vd").open=true;$("vd").scrollIntoView({behavior:"smooth"})}
+  if(a=="off"){if(B.some(b=>b.i==j&&ACT.includes(b.status))){msg("This vehicle has confirmed or picked-up bookings. Complete or cancel them before retiring it.");return}msg("");c[8]=true;await saveFleet();renderAll();renderFleet()}
+  if(a=="on"){c[8]=false;await saveFleet();renderAll();renderFleet()}
+};
+renderFleet();
+$("sc2").onclick=e=>{const c=e.target.closest(".sc");if(!c)return;qf=c.dataset.q;go("bookings")};
+["srch","dfrom","dto"].forEach(k=>$(k).oninput=renderAll);
+$("wprev").onclick=()=>{cs=addD(cs||todayS(),-7);renderCal()};$("wnext").onclick=()=>{cs=addD(cs||todayS(),7);renderCal()};$("wtoday").onclick=()=>{cs=todayS();renderCal()};
+$("cal").onclick=e=>{const t=e.target;if(t.dataset.car!==undefined&&t.dataset.day)startNew(+t.dataset.car,t.dataset.day);else if(t.dataset.bid){const b=B.find(x=>x.id==t.dataset.bid);if(b){$("srch").value=b.ino||b.qno;$("flt").value="";qf="";tab(1);renderAll()}}};
+$("sLogo").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const h=120,w=Math.round(im.width*h/im.height),cv=document.createElement("canvas");cv.width=w;cv.height=h;const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);S.logo=cv.toDataURL("image/jpeg",.85);S.logoR=w/h;showLogo()};im.src=r.result};r.readAsDataURL(f)};
+$("lgx").onclick=()=>{S.logo="";showLogo()};
+document.addEventListener("input",e=>{if(e.target.closest("#rp"))renderInv();else if(e.target.closest("#v2")){if(e.target.id=="cp")autofill();if(["car","from","to","plan","cpr"].includes(e.target.id)){aiA=null;aiS=null}renderQ()}});
+$("fest").onchange=()=>{if(sb)sset("festive",{text:$("fest").value}).then(e=>{if(e)msg(e)})};
+async function aiJson(prompt){
+  const ss=(await sb.auth.getSession()).data.session;if(!ss)throw new Error("Not signed in");
+  const r=await fetch("/api/ai-price",{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer "+ss.access_token},body:JSON.stringify({prompt})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){const e=new Error(j.error||"AI pricing failed ("+r.status+")");e.code=r.status==429?"rate_limited":"error";throw e}
+  const m=String(j.text||"").match(/\{[\s\S]*\}/);if(!m)throw new Error("The AI reply could not be read. Try again.");return JSON.parse(m[0]);
+}
+const SUPABASE_URL=location.origin+"/supabase",SUPABASE_KEY="sb_publishable_zaqCrASRlDVmrNjjMYrVGw_0lxmcbcE";
+let recov=false;
+function show(on){$("lg").style.display=on?"none":"block";$("shell").style.display=on?"flex":"none"}
+async function loadB(){
+  const r=await sb.from("team_bookings").select("data");
+  if(r.error){msg("Could not load bookings: "+r.error.message);return}
+  B=r.data.map(x=>x.data);
+  while(C.length<=Math.max(-1,...B.map(x=>x.i)))C.push(["Unknown vehicle","","",0,0,"H",0,"",true,{}]);
+  renderAll();renderFleet();
+}
+async function loadAll(){
+  const f=await sb.from("team_settings").select("key,value");
+  if(f.error){msg("Could not load settings: "+f.error.message);return}
+  f.data.forEach(r=>{
+    if(r.key=="company"&&r.value){S={...DS,...r.value};fillS()}
+    if(r.key=="fleet"&&r.value&&Array.isArray(r.value.v))C=r.value.v.map(fromV);
+    if(r.key=="festive"&&r.value&&r.value.text)$("fest").value=r.value.text;
+    if(r.key=="pricing"&&r.value)mergePR(r.value);
+    if(r.key=="meta"&&r.value)LASTBK=r.value.lastBackup||null;
+  });
+  renderPricing();await loadB();
+}
+async function start(){
+  const{data}=await sb.auth.getSession();if(!data.session){show(false);return}
+  UID=data.session.user.id;EML=data.session.user.email||"";$("acem").textContent=EML;$("nme").textContent=EML;
+  {const ea=await sb.rpc("ensure_account");if(ea.error){msg("Could not open your account: "+ea.error.message,"err");show(false);return}AID=ea.data.account_id;ROLE=ea.data.role;applyRole();if(ROLE=="owner")loadTeam()}
+  show(true);await loadAll();go(recov?"acct":"home");if(recov)$("npm").textContent="Set a new password below."
+}
+async function signOut(){await sb.auth.signOut();location.reload()}
+$("li").onclick=async()=>{const{error}=await sb.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value});if(error)msg(error.message);else{msg("");start()}};
+$("pw").onkeydown=e=>{if(e.key=="Enter")$("li").onclick()};
+$("fp").onclick=async()=>{const em=$("em").value.trim();if(!em){msg("Enter your email first.");return}const{error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin});msg(error?error.message:"If that email has an account, a reset link has been sent.")};
+$("so1").onclick=signOut;$("so2").onclick=signOut;
+$("npb").onclick=async()=>{const a=$("np1").value,b=$("np2").value;if(a.length<8){$("npm").textContent="Use at least 8 characters.";return}if(a!==b){$("npm").textContent="The two passwords do not match.";return}const{error}=await sb.auth.updateUser({password:a});$("npm").textContent=error?error.message:"Password updated.";if(!error){$("np1").value="";$("np2").value=""}};
+$("imj").onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;let j;
+  try{j=JSON.parse(await f.text())}catch(x){$("imm").textContent="That file is not valid JSON.";return}
+  const errs=[];
+  if(j.pricing)errs.push(await sset("pricing",j.pricing));
+  if(j.fleet&&Array.isArray(j.fleet.v))errs.push(await sset("fleet",j.fleet));
+  if(j.company)errs.push(await sset("company",j.company));
+  if(j.festive&&j.festive.text)errs.push(await sset("festive",j.festive));
+  const bad=errs.filter(Boolean);
+  if(bad.length){$("imm").textContent="Some parts could not be saved: "+bad[0];return}
+  await loadAll();$("imm").textContent="Setup loaded.";e.target.value="";
+};
+if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(()=>{});
+renderAll();
+try{sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);sb.auth.onAuthStateChange(ev=>{if(ev=="PASSWORD_RECOVERY")recov=true});start();setInterval(()=>{if($("shell").style.display!="none"&&UID)loadB()},20000)}
+catch(e){msg("Could not start: "+e.message);show(false)}
+</script></body></html>
